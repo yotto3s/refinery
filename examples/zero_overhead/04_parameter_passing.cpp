@@ -7,15 +7,13 @@
 
 using namespace refined;
 
-__attribute__((noinline))
-int refined_sum3(Refined<int, Positive> a,
-                 Refined<int, Positive> b,
-                 Refined<int, Positive> c) {
+__attribute__((noinline)) int refined_sum3(Refined<int, Positive> a,
+                                           Refined<int, Positive> b,
+                                           Refined<int, Positive> c) {
     return a.get() + b.get() + c.get();
 }
 
-__attribute__((noinline))
-int plain_sum3(int a, int b, int c) {
+__attribute__((noinline)) int plain_sum3(int a, int b, int c) {
     return a + b + c;
 }
 

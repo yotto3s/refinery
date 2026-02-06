@@ -3,20 +3,16 @@
 // safe_sqrt accepts Refined<double, NonNegative> and returns the same type,
 // using assume_valid internally. Should compile to a single sqrtsd.
 
-#include <rcpp/refined.hpp>
 #include <cmath>
+#include <rcpp/refined.hpp>
 
 using namespace refined;
 
-__attribute__((noinline))
-double refined_sqrt(Refined<double, NonNegative> x) {
+__attribute__((noinline)) double refined_sqrt(Refined<double, NonNegative> x) {
     return safe_sqrt(x).get();
 }
 
-__attribute__((noinline))
-double plain_sqrt(double x) {
-    return std::sqrt(x);
-}
+__attribute__((noinline)) double plain_sqrt(double x) { return std::sqrt(x); }
 
 int main() {
     auto x = Refined<double, NonNegative>(9.0, assume_valid);

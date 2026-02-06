@@ -4,11 +4,11 @@
 #ifndef RCPP_DIAGNOSTICS_HPP
 #define RCPP_DIAGNOSTICS_HPP
 
+#include <exception>
 #include <format>
+#include <source_location>
 #include <string>
 #include <string_view>
-#include <source_location>
-#include <exception>
 
 #include <meta>
 
@@ -17,49 +17,44 @@ namespace refined {
 namespace detail {
 
 // Format a value for diagnostic output using reflection
-template<typename T>
-consteval std::string format_value(const T& value) {
+template <typename T> consteval std::string format_value(const T& value) {
     using namespace std::meta;
     auto refl = reflect_constant(value);
     return std::string(display_string_of(refl));
 }
 
 // Build error message using reflection
-template<typename T>
+template <typename T>
 consteval std::string build_violation_message(const T& value) {
-    return std::format(
-        "Refinement violation: {} does not satisfy predicate",
-        format_value(value)
-    );
+    return std::format("Refinement violation: {} does not satisfy predicate",
+                       format_value(value));
 }
 
 } // namespace detail
 
 // Exception for runtime refinement failures
 class refinement_error : public std::exception {
-private:
+  private:
     std::string message_;
 
-public:
-    template<typename T>
+  public:
+    template <typename T>
         requires std::formattable<T, char>
-    explicit refinement_error(const T& value, std::string_view pred_name = "predicate")
-        : message_(std::format("Refinement violation: {} does not satisfy {}", value, pred_name))
-    {}
+    explicit refinement_error(const T& value,
+                              std::string_view pred_name = "predicate")
+        : message_(std::format("Refinement violation: {} does not satisfy {}",
+                               value, pred_name)) {}
 
-    template<typename T>
-        requires (!std::formattable<T, char>)
-    explicit refinement_error(const T&, std::string_view pred_name = "predicate")
-        : message_(std::format("Refinement violation: value does not satisfy {}", pred_name))
-    {}
+    template <typename T>
+        requires(!std::formattable<T, char>)
+    explicit refinement_error(const T&,
+                              std::string_view pred_name = "predicate")
+        : message_(std::format(
+              "Refinement violation: value does not satisfy {}", pred_name)) {}
 
-    explicit refinement_error(std::string msg)
-        : message_(std::move(msg))
-    {}
+    explicit refinement_error(std::string msg) : message_(std::move(msg)) {}
 
-    const char* what() const noexcept override {
-        return message_.c_str();
-    }
+    const char* what() const noexcept override { return message_.c_str(); }
 };
 
 // Tag type for runtime checking

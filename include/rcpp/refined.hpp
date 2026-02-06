@@ -34,12 +34,12 @@
 #ifndef RCPP_REFINED_HPP
 #define RCPP_REFINED_HPP
 
-#include "diagnostics.hpp"
-#include "predicates.hpp"
 #include "compose.hpp"
-#include "refined_type.hpp"
-#include "operations.hpp"
+#include "diagnostics.hpp"
 #include "interval.hpp"
+#include "operations.hpp"
+#include "predicates.hpp"
+#include "refined_type.hpp"
 
 namespace refined {
 
@@ -112,8 +112,7 @@ using Natural = PositiveInt;
 using Whole = NonNegativeInt;
 
 // Helper to create a named predicate with documentation
-#define DEFINE_PREDICATE(Name, ...) \
-    inline constexpr auto Name = __VA_ARGS__
+#define DEFINE_PREDICATE(Name, ...) inline constexpr auto Name = __VA_ARGS__
 
 } // namespace refined
 

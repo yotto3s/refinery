@@ -7,25 +7,21 @@
 
 using namespace refined;
 
-__attribute__((noinline))
-double refined_divide(double num, Refined<double, NonZero> den) {
+__attribute__((noinline)) double refined_divide(double num,
+                                                Refined<double, NonZero> den) {
     return safe_divide(num, den);
 }
 
-__attribute__((noinline))
-double plain_divide(double num, double den) {
+__attribute__((noinline)) double plain_divide(double num, double den) {
     return num / den;
 }
 
-__attribute__((noinline))
-double refined_reciprocal(Refined<double, NonZero> x) {
+__attribute__((noinline)) double
+refined_reciprocal(Refined<double, NonZero> x) {
     return safe_reciprocal(x);
 }
 
-__attribute__((noinline))
-double plain_reciprocal(double x) {
-    return 1.0 / x;
-}
+__attribute__((noinline)) double plain_reciprocal(double x) { return 1.0 / x; }
 
 int main() {
     auto d = Refined<double, NonZero>(3.0, assume_valid);

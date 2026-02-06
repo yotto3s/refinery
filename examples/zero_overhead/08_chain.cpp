@@ -1,25 +1,23 @@
 // 08_chain.cpp — Proves multi-op chains match plain equivalents
 //
 // Chain: square(x) + square(y) -> safe_sqrt
-// This exercises square (returns NonNegative), addition (preserves NonNegative),
-// and safe_sqrt (preserves NonNegative).
+// This exercises square (returns NonNegative), addition (preserves
+// NonNegative), and safe_sqrt (preserves NonNegative).
 
-#include <rcpp/refined.hpp>
 #include <cmath>
+#include <rcpp/refined.hpp>
 
 using namespace refined;
 
-__attribute__((noinline))
-double refined_hypot(Refined<double, NonNegative> x,
-                     Refined<double, NonNegative> y) {
-    auto x2 = square(x);   // Refined<double, NonNegative>
-    auto y2 = square(y);   // Refined<double, NonNegative>
-    auto sum = x2 + y2;    // Refined<double, NonNegative> (preserves)
+__attribute__((noinline)) double refined_hypot(Refined<double, NonNegative> x,
+                                               Refined<double, NonNegative> y) {
+    auto x2 = square(x); // Refined<double, NonNegative>
+    auto y2 = square(y); // Refined<double, NonNegative>
+    auto sum = x2 + y2;  // Refined<double, NonNegative> (preserves)
     return safe_sqrt(sum).get();
 }
 
-__attribute__((noinline))
-double plain_hypot(double x, double y) {
+__attribute__((noinline)) double plain_hypot(double x, double y) {
     double x2 = x * x;
     double y2 = y * y;
     double sum = x2 + y2;

@@ -17,7 +17,7 @@ foreach(example IN LISTS ZERO_OVERHEAD_EXAMPLES)
     set(target "zero_overhead_${example}")
     add_executable(${target} "zero_overhead/${example}.cpp")
     target_link_libraries(${target} PRIVATE rcpp::rcpp)
-    target_compile_options(${target} PRIVATE -O2)
+    target_compile_options(${target} PRIVATE -O2 -Wall -Wextra -Werror -Wno-unused-but-set-variable)
     list(APPEND EXAMPLE_TARGETS ${target})
 endforeach()
 

@@ -1,24 +1,24 @@
 // test_refine.cpp - Test suite for C++26 Refinement Types Library
 
-#include <rcpp/refined.hpp>
-#include <gtest/gtest.h>
 #include <cmath>
+#include <gtest/gtest.h>
 #include <limits>
 #include <numbers>
+#include <rcpp/refined.hpp>
 
 using namespace refined;
 
 // ---- Helper templates used by tests ----
 
-template<std::size_t N>
+template <std::size_t N>
 using BoundedIndex = Refined<std::size_t, InHalfOpenRange(std::size_t{0}, N)>;
 
-template<typename T, std::size_t N>
+template <typename T, std::size_t N>
 constexpr const T& safe_at(const T (&arr)[N], BoundedIndex<N> index) {
     return arr[index.get()];
 }
 
-template<typename T>
+template <typename T>
 constexpr T sqrt_positive(Refined<T, Positive> x)
     requires std::floating_point<T>
 {
@@ -40,11 +40,16 @@ consteval int test_compile_time_construction() {
 
     Percentage pct{50};
 
-    if (p1.get() != 42) throw "p1 should be 42";
-    if (*p2 != 1) throw "p2 should be 1";
-    if (nz.get() != -5) throw "nz should be -5";
-    if (nn.get() != 0) throw "nn should be 0";
-    if (pct.get() != 50) throw "pct should be 50";
+    if (p1.get() != 42)
+        throw "p1 should be 42";
+    if (*p2 != 1)
+        throw "p2 should be 1";
+    if (nz.get() != -5)
+        throw "nz should be -5";
+    if (nn.get() != 0)
+        throw "nn should be 0";
+    if (pct.get() != 50)
+        throw "pct should be 50";
 
     return p1.get() + p2.get();
 }
@@ -55,10 +60,14 @@ consteval double test_float_compile_time() {
     NormalizedDouble nd{0.5};
     UnitDouble ud{0.75};
 
-    if (pd.get() != 3.14) throw "pd should be 3.14";
-    if (fd.get() != 2.718) throw "fd should be 2.718";
-    if (nd.get() != 0.5) throw "nd should be 0.5";
-    if (ud.get() != 0.75) throw "ud should be 0.75";
+    if (pd.get() != 3.14)
+        throw "pd should be 3.14";
+    if (fd.get() != 2.718)
+        throw "fd should be 2.718";
+    if (nd.get() != 0.5)
+        throw "nd should be 0.5";
+    if (ud.get() != 0.75)
+        throw "ud should be 0.75";
 
     return pd.get();
 }
@@ -96,8 +105,12 @@ TEST(RuntimeConstruction, FloatTypes) {
     UnitDouble ud{0.5, runtime_check};
     EXPECT_EQ(ud.get(), 0.5);
 
-    EXPECT_THROW(FiniteDouble(std::numeric_limits<double>::quiet_NaN(), runtime_check), refinement_error);
-    EXPECT_THROW(FiniteDouble(std::numeric_limits<double>::infinity(), runtime_check), refinement_error);
+    EXPECT_THROW(
+        FiniteDouble(std::numeric_limits<double>::quiet_NaN(), runtime_check),
+        refinement_error);
+    EXPECT_THROW(
+        FiniteDouble(std::numeric_limits<double>::infinity(), runtime_check),
+        refinement_error);
     EXPECT_THROW(NormalizedDouble(2.0, runtime_check), refinement_error);
     EXPECT_THROW(UnitDouble(-0.1, runtime_check), refinement_error);
 }
@@ -256,14 +269,16 @@ TEST(Operations, SafeArithmetic) {
 
 TEST(Operations, IntegerOverflow) {
     // abs(INT_MIN) throws
-    EXPECT_THROW(refined::abs(std::numeric_limits<int>::min()), refinement_error);
+    EXPECT_THROW((void)refined::abs(std::numeric_limits<int>::min()),
+                 refinement_error);
 
     // abs of valid negative works
     auto abs_val = refined::abs(-42);
     EXPECT_EQ(abs_val.get(), 42);
 
     // square(INT_MAX) throws (overflow)
-    EXPECT_THROW(refined::square(std::numeric_limits<int>::max()), refinement_error);
+    EXPECT_THROW((void)refined::square(std::numeric_limits<int>::max()),
+                 refinement_error);
 
     // square of small values works
     auto sq = refined::square(100);
@@ -444,8 +459,10 @@ TEST(Interval, RuntimeConstruction) {
     IntervalRefined<int, 0, 10> x{7, runtime_check};
     EXPECT_EQ(x.get(), 7);
 
-    EXPECT_THROW((IntervalRefined<int, 0, 10>(11, runtime_check)), refinement_error);
-    EXPECT_THROW((IntervalRefined<int, 0, 10>(-1, runtime_check)), refinement_error);
+    EXPECT_THROW((IntervalRefined<int, 0, 10>(11, runtime_check)),
+                 refinement_error);
+    EXPECT_THROW((IntervalRefined<int, 0, 10>(-1, runtime_check)),
+                 refinement_error);
 }
 
 TEST(Interval, Addition) {
@@ -457,7 +474,8 @@ TEST(Interval, Addition) {
 
     // Result type should be Interval<-3, 15>
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<int, Interval<-3, 15>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<int, Interval<-3, 15>{}>>);
 }
 
 TEST(Interval, Subtraction) {
@@ -469,7 +487,8 @@ TEST(Interval, Subtraction) {
 
     // [0,10] - [-3,5] = [0-5, 10-(-3)] = [-5, 13]
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<int, Interval<-5, 13>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<int, Interval<-5, 13>{}>>);
 }
 
 TEST(Interval, Multiplication) {
@@ -481,7 +500,8 @@ TEST(Interval, Multiplication) {
 
     // [1,5] * [2,3] = [2, 15]
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<int, Interval<2, 15>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<int, Interval<2, 15>{}>>);
 }
 
 TEST(Interval, MultiplicationWithNegatives) {
@@ -493,7 +513,8 @@ TEST(Interval, MultiplicationWithNegatives) {
 
     // [-2,3] * [-1,4] = [min(2,-8,-3,12), max(2,-8,-3,12)] = [-8, 12]
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<int, Interval<-8, 12>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<int, Interval<-8, 12>{}>>);
 }
 
 TEST(Interval, Negation) {
@@ -504,7 +525,8 @@ TEST(Interval, Negation) {
 
     // -[2,7] = [-7, -2]
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<int, Interval<-7, -2>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<int, Interval<-7, -2>{}>>);
 }
 
 TEST(Interval, SameIntervalAddition) {
@@ -517,7 +539,8 @@ TEST(Interval, SameIntervalAddition) {
 
     // [0,10] + [0,10] = [0, 20]
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<int, Interval<0, 20>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<int, Interval<0, 20>{}>>);
 }
 
 TEST(Interval, ChainedOperations) {
@@ -526,12 +549,15 @@ TEST(Interval, ChainedOperations) {
     constexpr IntervalRefined<int, 1, 2> c{2};
 
     // (a + b) * c
-    constexpr auto sum = a + b;     // Interval<-3, 15>
-    constexpr auto result = sum * c; // [-3,15] * [1,2] = [min(-3,-6,15,30), max(-3,-6,15,30)] = [-6, 30]
+    constexpr auto sum = a + b; // Interval<-3, 15>
+    constexpr auto result =
+        sum *
+        c; // [-3,15] * [1,2] = [min(-3,-6,15,30), max(-3,-6,15,30)] = [-6, 30]
     static_assert(result.get() == 10);
 
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<int, Interval<-6, 30>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<int, Interval<-6, 30>{}>>);
 }
 
 TEST(Interval, FloatingPoint) {
@@ -543,7 +569,8 @@ TEST(Interval, FloatingPoint) {
 
     // [0.0, 1.0] + [-0.5, 0.5] = [-0.5, 1.5]
     using ResultType = decltype(result);
-    static_assert(std::same_as<ResultType, const Refined<double, Interval<-0.5, 1.5>{}>>);
+    static_assert(
+        std::same_as<ResultType, const Refined<double, Interval<-0.5, 1.5>{}>>);
 }
 
 TEST(Interval, RuntimeArithmetic) {
@@ -552,34 +579,41 @@ TEST(Interval, RuntimeArithmetic) {
 
     auto sum = a + b;
     EXPECT_EQ(sum.get(), 5);
-    // Type check still works — the interval computation is compile-time even with runtime values
-    static_assert(std::same_as<decltype(sum), Refined<int, Interval<-3, 15>{}>>);
+    // Type check still works — the interval computation is compile-time even
+    // with runtime values
+    static_assert(
+        std::same_as<decltype(sum), Refined<int, Interval<-3, 15>{}>>);
 
     auto diff = a - b;
     EXPECT_EQ(diff.get(), 1);
-    static_assert(std::same_as<decltype(diff), Refined<int, Interval<-5, 13>{}>>);
+    static_assert(
+        std::same_as<decltype(diff), Refined<int, Interval<-5, 13>{}>>);
 
     IntervalRefined<int, 1, 5> c{3, runtime_check};
     IntervalRefined<int, 2, 3> d{2, runtime_check};
     auto prod = c * d;
     EXPECT_EQ(prod.get(), 6);
-    static_assert(std::same_as<decltype(prod), Refined<int, Interval<2, 15>{}>>);
+    static_assert(
+        std::same_as<decltype(prod), Refined<int, Interval<2, 15>{}>>);
 
     IntervalRefined<int, 2, 7> e{5, runtime_check};
     auto neg = -e;
     EXPECT_EQ(neg.get(), -5);
-    static_assert(std::same_as<decltype(neg), Refined<int, Interval<-7, -2>{}>>);
+    static_assert(
+        std::same_as<decltype(neg), Refined<int, Interval<-7, -2>{}>>);
 
     // Same-predicate runtime
     IntervalRefined<int, 0, 10> f{4, runtime_check};
     auto same_sum = a + f;
     EXPECT_EQ(same_sum.get(), 7);
-    static_assert(std::same_as<decltype(same_sum), Refined<int, Interval<0, 20>{}>>);
+    static_assert(
+        std::same_as<decltype(same_sum), Refined<int, Interval<0, 20>{}>>);
 
     // Chained runtime
     auto chained = (a + b) * IntervalRefined<int, 1, 2>{2, runtime_check};
     EXPECT_EQ(chained.get(), 10);
-    static_assert(std::same_as<decltype(chained), Refined<int, Interval<-6, 30>{}>>);
+    static_assert(
+        std::same_as<decltype(chained), Refined<int, Interval<-6, 30>{}>>);
 }
 
 TEST(Interval, IntervalTraitsConcept) {
@@ -594,36 +628,41 @@ TEST(Interval, IntervalTraitsConcept) {
 TEST(Composition, IffXor) {
     // Iff: both must have same truth value
     constexpr auto both_positive_or_both_not = Iff<Positive, NonZero>;
-    static_assert(both_positive_or_both_not(5));    // both true
-    static_assert(both_positive_or_both_not(0));    // both false → same
-    static_assert(!both_positive_or_both_not(-5));  // Positive=false, NonZero=true → different
+    static_assert(both_positive_or_both_not(5)); // both true
+    static_assert(both_positive_or_both_not(0)); // both false → same
+    static_assert(!both_positive_or_both_not(
+        -5)); // Positive=false, NonZero=true → different
 
     // Xor: exactly one must be true
     constexpr auto one_but_not_both = Xor<Positive, Even>;
-    static_assert(one_but_not_both(3));    // Positive=true, Even=false → true
-    static_assert(one_but_not_both(-4));   // Positive=false, Even=true → true
-    static_assert(!one_but_not_both(4));   // both true → false
-    static_assert(!one_but_not_both(-3));  // both false → false
+    static_assert(one_but_not_both(3));   // Positive=true, Even=false → true
+    static_assert(one_but_not_both(-4));  // Positive=false, Even=true → true
+    static_assert(!one_but_not_both(4));  // both true → false
+    static_assert(!one_but_not_both(-3)); // both false → false
 }
 
 TEST(Composition, ExactlyNAtLeastNAtMostN) {
     constexpr auto exactly_two = ExactlyN<2, Positive, Even, NonZero>;
-    static_assert(exactly_two(-2));    // Even=true, NonZero=true, Positive=false → 2
-    static_assert(!exactly_two(2));    // all three true → 3
-    static_assert(!exactly_two(0));    // Even=true → 1
+    static_assert(
+        exactly_two(-2)); // Even=true, NonZero=true, Positive=false → 2
+    static_assert(!exactly_two(2)); // all three true → 3
+    static_assert(!exactly_two(0)); // Even=true → 1
 
     constexpr auto at_least_two = AtLeastN<2, Positive, Even, NonZero>;
-    static_assert(at_least_two(2));    // all three → 3 >= 2
-    static_assert(at_least_two(-2));   // Even+NonZero → 2 >= 2
-    static_assert(!at_least_two(0));   // Even only → 1 < 2
+    static_assert(at_least_two(2));  // all three → 3 >= 2
+    static_assert(at_least_two(-2)); // Even+NonZero → 2 >= 2
+    static_assert(!at_least_two(0)); // Even only → 1 < 2
 
     constexpr auto at_most_one = AtMostN<1, Positive, Even, NonZero>;
-    static_assert(at_most_one(0));     // Even only → 1 <= 1
-    static_assert(!at_most_one(2));    // all three → 3 > 1
+    static_assert(at_most_one(0));  // Even only → 1 <= 1
+    static_assert(!at_most_one(2)); // all three → 3 > 1
 }
 
 TEST(Composition, ApplyOnMember) {
-    struct Point { int x; int y; };
+    struct Point {
+        int x;
+        int y;
+    };
 
     constexpr auto x_positive = OnMember<&Point::x, Positive>;
     constexpr auto y_positive = OnMember<&Point::y, Positive>;
@@ -636,8 +675,8 @@ TEST(Composition, ApplyOnMember) {
     // Apply with a projection function
     constexpr auto negate = [](int v) constexpr { return -v; };
     constexpr auto negate_is_positive = Apply<negate, Positive>;
-    static_assert(negate_is_positive(-5));   // negate(-5) = 5 > 0
-    static_assert(!negate_is_positive(5));   // negate(5) = -5 < 0
+    static_assert(negate_is_positive(-5)); // negate(-5) = 5 > 0
+    static_assert(!negate_is_positive(5)); // negate(5) = -5 < 0
 }
 
 TEST(Composition, RuntimeComposition) {
@@ -649,20 +688,21 @@ TEST(Composition, RuntimeComposition) {
 
     // runtime::AnyOf
     runtime::AnyOf<int> any_checks(Positive, Even);
-    EXPECT_TRUE(any_checks(3));    // Positive
-    EXPECT_TRUE(any_checks(-4));   // Even
-    EXPECT_FALSE(any_checks(-3));  // neither
+    EXPECT_TRUE(any_checks(3));   // Positive
+    EXPECT_TRUE(any_checks(-4));  // Even
+    EXPECT_FALSE(any_checks(-3)); // neither
 
     // runtime::NoneOf
     runtime::NoneOf<int> none_checks(Positive, Even);
-    EXPECT_TRUE(none_checks(-3));   // neither positive nor even
-    EXPECT_FALSE(none_checks(3));   // positive
-    EXPECT_FALSE(none_checks(-4));  // even
+    EXPECT_TRUE(none_checks(-3));  // neither positive nor even
+    EXPECT_FALSE(none_checks(3));  // positive
+    EXPECT_FALSE(none_checks(-4)); // even
 }
 
 TEST(Operations, TransformRefined) {
     PositiveInt p{5, runtime_check};
-    auto doubled = transform_refined<NonNegative>(p, [](int v) { return v * 2; });
+    auto doubled =
+        transform_refined<NonNegative>(p, [](int v) { return v * 2; });
     EXPECT_EQ(doubled.get(), 10);
     static_assert(std::same_as<decltype(doubled), Refined<int, NonNegative>>);
 }

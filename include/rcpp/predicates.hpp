@@ -4,13 +4,13 @@
 #ifndef RCPP_PREDICATES_HPP
 #define RCPP_PREDICATES_HPP
 
-#include <concepts>
-#include <type_traits>
-#include <cstddef>
 #include <cmath>
+#include <concepts>
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace refined {
 
@@ -101,82 +101,63 @@ inline constexpr auto Empty = [](const auto& v) constexpr {
 };
 
 inline constexpr auto SizeAtLeast = [](std::size_t min_size) constexpr {
-    return [=](const auto& v) constexpr {
-        return v.size() >= min_size;
-    };
+    return [=](const auto& v) constexpr { return v.size() >= min_size; };
 };
 
 inline constexpr auto SizeAtMost = [](std::size_t max_size) constexpr {
-    return [=](const auto& v) constexpr {
-        return v.size() <= max_size;
-    };
+    return [=](const auto& v) constexpr { return v.size() <= max_size; };
 };
 
 inline constexpr auto SizeExactly = [](std::size_t exact_size) constexpr {
-    return [=](const auto& v) constexpr {
-        return v.size() == exact_size;
-    };
+    return [=](const auto& v) constexpr { return v.size() == exact_size; };
 };
 
-inline constexpr auto SizeInRange = [](std::size_t min_size, std::size_t max_size) constexpr {
+inline constexpr auto SizeInRange = [](std::size_t min_size,
+                                       std::size_t max_size) constexpr {
     return [=](const auto& v) constexpr {
         return v.size() >= min_size && v.size() <= max_size;
     };
 };
 
 // Pointer predicates
-inline constexpr auto NotNull = [](auto* p) constexpr {
-    return p != nullptr;
-};
+inline constexpr auto NotNull = [](auto* p) constexpr { return p != nullptr; };
 
-inline constexpr auto IsNull = [](auto* p) constexpr {
-    return p == nullptr;
-};
+inline constexpr auto IsNull = [](auto* p) constexpr { return p == nullptr; };
 
 // Divisibility predicates
 inline constexpr auto DivisibleBy = [](auto divisor) constexpr {
     return [=](auto v) constexpr { return v % divisor == 0; };
 };
 
-inline constexpr auto Even = [](auto v) constexpr {
-    return v % 2 == 0;
-};
+inline constexpr auto Even = [](auto v) constexpr { return v % 2 == 0; };
 
-inline constexpr auto Odd = [](auto v) constexpr {
-    return v % 2 != 0;
-};
+inline constexpr auto Odd = [](auto v) constexpr { return v % 2 != 0; };
 
 // Bitwise predicates
 inline constexpr auto PowerOfTwo = [](auto v) constexpr
     requires std::integral<decltype(v)>
-{
-    return v > 0 && (v & (v - 1)) == 0;
-};
+{ return v > 0 && (v & (v - 1)) == 0; };
 
 // Floating point predicates
 inline constexpr auto Finite = [](auto v) constexpr {
     using T = decltype(v);
-    return v == v  // not NaN
-        && v != std::numeric_limits<T>::infinity()
-        && v != -std::numeric_limits<T>::infinity();
+    return v == v // not NaN
+           && v != std::numeric_limits<T>::infinity() &&
+           v != -std::numeric_limits<T>::infinity();
 };
 
 inline constexpr auto Normalized = [](auto v) constexpr {
     return v >= decltype(v){-1} && v <= decltype(v){1};
 };
 
-inline constexpr auto NotNaN = [](auto v) constexpr {
-    return v == v;
-};
+inline constexpr auto NotNaN = [](auto v) constexpr { return v == v; };
 
-inline constexpr auto IsNaN = [](auto v) constexpr {
-    return v != v;
-};
+inline constexpr auto IsNaN = [](auto v) constexpr { return v != v; };
 
 inline constexpr auto IsInf = [](auto v) constexpr {
     using T = decltype(v);
-    return v == std::numeric_limits<T>::infinity()
-        || v == -std::numeric_limits<T>::infinity();
+    return v == std::numeric_limits<T>::infinity() ||
+           v == -std::numeric_limits<T>::infinity();
 };
 
 inline constexpr auto IsNormal = [](auto v) constexpr {

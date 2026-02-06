@@ -7,25 +7,19 @@
 
 using namespace refined;
 
-__attribute__((noinline))
-bool refined_less(Refined<int, Positive> a, Refined<int, Positive> b) {
+__attribute__((noinline)) bool refined_less(Refined<int, Positive> a,
+                                            Refined<int, Positive> b) {
     return a < b;
 }
 
-__attribute__((noinline))
-bool plain_less(int a, int b) {
-    return a < b;
-}
+__attribute__((noinline)) bool plain_less(int a, int b) { return a < b; }
 
-__attribute__((noinline))
-bool refined_equal(Refined<int, Positive> a, Refined<int, Positive> b) {
+__attribute__((noinline)) bool refined_equal(Refined<int, Positive> a,
+                                             Refined<int, Positive> b) {
     return a == b;
 }
 
-__attribute__((noinline))
-bool plain_equal(int a, int b) {
-    return a == b;
-}
+__attribute__((noinline)) bool plain_equal(int a, int b) { return a == b; }
 
 int main() {
     auto a = Refined<int, Positive>(5, assume_valid);
