@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # compare_asm.sh — Compare assembly of refined_* vs plain_* function pairs
 #
-# Usage: compare_asm.sh <build-examples-dir> <example-names...>
-# Example: compare_asm.sh build/examples 01_value_passthrough 02_arithmetic
+# Usage: compare_asm.sh <build-examples-dir> <prefix> <example-names...>
+# Example: compare_asm.sh build/examples zero_overhead_ 01_value_passthrough 02_arithmetic
 
 set -euo pipefail
 
 BUILD_DIR="$1"
-shift
+PREFIX="$2"
+shift 2
 EXAMPLES=("$@")
 
 RED='\033[0;31m'
@@ -20,25 +21,29 @@ PASS=0
 DIFF=0
 TOTAL=0
 
-# Extract a function body from objdump output by matching the full header line.
+DUMPFILE=$(mktemp)
+trap 'rm -f "$DUMPFILE"' EXIT
+
+# Extract a function body from objdump output file by matching the full header line.
 # The header has the form: <hex-addr> <full_demangled_name(...)>:
 # We grep for lines matching the short name prefix, then extract between
 # that header and the next blank line.
 extract_func_body() {
-    local dump="$1"
+    local dumpfile="$1"
     local short_name="$2"
 
-    # Find the header line number for this function
+    # Find the header line number for this function (exclude cold clones)
     local header
-    header=$(echo "$dump" | grep -n "^[0-9a-f]* <${short_name}(" | head -1 | cut -d: -f1)
+    header=$(grep -n "^[0-9a-f]* <${short_name}(" "$dumpfile" | grep -v '\[clone \.cold\]' | head -1 | cut -d: -f1)
 
     if [[ -z "$header" ]]; then
         return 1
     fi
 
-    # From the header+1, print until blank line; strip address prefixes; normalize
-    echo "$dump" \
-        | tail -n +"$((header + 1))" \
+    # From the header+1, print until blank line; strip address prefixes; normalize.
+    # The trailing `|| true` prevents pipefail from propagating grep -v exit code 1
+    # when all lines are filtered out (e.g., only NOPs remain after the ret).
+    tail -n +"$((header + 1))" "$dumpfile" \
         | sed '/^$/q' \
         | grep -v '^$' \
         | sed 's/^[[:space:]]*[0-9a-f]*:[[:space:]]*//' \
@@ -52,23 +57,23 @@ extract_func_body() {
         | sed 's/#.*$//' \
         | sed 's/ <.*$//' \
         | sed 's/[0-9a-f]\{4,\}/ADDR/g' \
-        | sed 's/[[:space:]]*$//'
+        | sed 's/[[:space:]]*$//' \
+        || true
 }
 
 for example in "${EXAMPLES[@]}"; do
-    binary="${BUILD_DIR}/zero_overhead_${example}"
+    binary="${BUILD_DIR}/${PREFIX}${example}"
 
     if [[ ! -f "$binary" ]]; then
         echo -e "${RED}SKIP${RESET} ${example}: binary not found at ${binary}"
         continue
     fi
 
-    # Get full disassembly once
-    DUMP=$(objdump -d --no-show-raw-insn "$binary" | c++filt)
+    # Get full disassembly into a temp file (avoids NUL-byte issues with bash variables)
+    objdump -d --no-show-raw-insn "$binary" | c++filt > "$DUMPFILE"
 
     # Find all refined_* short function names from header lines
-    REFINED_FUNCS=$(echo "$DUMP" \
-        | grep -oP '(?<=<)refined_[a-zA-Z0-9_]+(?=\()' \
+    REFINED_FUNCS=$(grep -oP '(?<=<)refined_[a-zA-Z0-9_]+(?=\()' "$DUMPFILE" \
         | sort -u || true)
 
     if [[ -z "$REFINED_FUNCS" ]]; then
@@ -80,8 +85,8 @@ for example in "${EXAMPLES[@]}"; do
         plain_func="${refined_func/refined_/plain_}"
         TOTAL=$((TOTAL + 1))
 
-        refined_asm=$(extract_func_body "$DUMP" "$refined_func" 2>/dev/null) || refined_asm=""
-        plain_asm=$(extract_func_body "$DUMP" "$plain_func" 2>/dev/null) || plain_asm=""
+        refined_asm=$(extract_func_body "$DUMPFILE" "$refined_func" 2>/dev/null) || refined_asm=""
+        plain_asm=$(extract_func_body "$DUMPFILE" "$plain_func" 2>/dev/null) || plain_asm=""
 
         if [[ -z "$refined_asm" ]]; then
             echo -e "${RED}MISS${RESET} ${example}: ${refined_func} not found in disassembly"
