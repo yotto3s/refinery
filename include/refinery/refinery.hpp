@@ -50,55 +50,67 @@ namespace refinery {
 // --- Signed integers ---
 
 // Positive integers (> 0) — interval-based for arithmetic ergonomics
-using PositiveI8 =
-    IntervalRefined<std::int8_t, std::int8_t{1}, std::numeric_limits<std::int8_t>::max()>;
-using PositiveI16 =
-    IntervalRefined<std::int16_t, std::int16_t{1}, std::numeric_limits<std::int16_t>::max()>;
-using PositiveI32 =
-    IntervalRefined<std::int32_t, std::int32_t{1}, std::numeric_limits<std::int32_t>::max()>;
-using PositiveI64 =
-    IntervalRefined<std::int64_t, std::int64_t{1}, std::numeric_limits<std::int64_t>::max()>;
+using PositiveI8 = IntervalRefined<std::int8_t, std::int8_t{1},
+                                   std::numeric_limits<std::int8_t>::max()>;
+using PositiveI16 = IntervalRefined<std::int16_t, std::int16_t{1},
+                                    std::numeric_limits<std::int16_t>::max()>;
+using PositiveI32 = IntervalRefined<std::int32_t, std::int32_t{1},
+                                    std::numeric_limits<std::int32_t>::max()>;
+using PositiveI64 = IntervalRefined<std::int64_t, std::int64_t{1},
+                                    std::numeric_limits<std::int64_t>::max()>;
 
 // Negative integers (< 0) — interval-based
 using NegativeI8 =
-    IntervalRefined<std::int8_t, std::numeric_limits<std::int8_t>::min(), std::int8_t{-1}>;
+    IntervalRefined<std::int8_t, std::numeric_limits<std::int8_t>::min(),
+                    std::int8_t{-1}>;
 using NegativeI16 =
-    IntervalRefined<std::int16_t, std::numeric_limits<std::int16_t>::min(), std::int16_t{-1}>;
+    IntervalRefined<std::int16_t, std::numeric_limits<std::int16_t>::min(),
+                    std::int16_t{-1}>;
 using NegativeI32 =
-    IntervalRefined<std::int32_t, std::numeric_limits<std::int32_t>::min(), std::int32_t{-1}>;
+    IntervalRefined<std::int32_t, std::numeric_limits<std::int32_t>::min(),
+                    std::int32_t{-1}>;
 using NegativeI64 =
-    IntervalRefined<std::int64_t, std::numeric_limits<std::int64_t>::min(), std::int64_t{-1}>;
+    IntervalRefined<std::int64_t, std::numeric_limits<std::int64_t>::min(),
+                    std::int64_t{-1}>;
 
 // Non-negative integers (>= 0) — interval-based
-using NonNegativeI8 =
-    IntervalRefined<std::int8_t, std::int8_t{0}, std::numeric_limits<std::int8_t>::max()>;
+using NonNegativeI8 = IntervalRefined<std::int8_t, std::int8_t{0},
+                                      std::numeric_limits<std::int8_t>::max()>;
 using NonNegativeI16 =
-    IntervalRefined<std::int16_t, std::int16_t{0}, std::numeric_limits<std::int16_t>::max()>;
+    IntervalRefined<std::int16_t, std::int16_t{0},
+                    std::numeric_limits<std::int16_t>::max()>;
 using NonNegativeI32 =
-    IntervalRefined<std::int32_t, std::int32_t{0}, std::numeric_limits<std::int32_t>::max()>;
+    IntervalRefined<std::int32_t, std::int32_t{0},
+                    std::numeric_limits<std::int32_t>::max()>;
 using NonNegativeI64 =
-    IntervalRefined<std::int64_t, std::int64_t{0}, std::numeric_limits<std::int64_t>::max()>;
+    IntervalRefined<std::int64_t, std::int64_t{0},
+                    std::numeric_limits<std::int64_t>::max()>;
 
 // Non-positive integers (<= 0) — interval-based
 using NonPositiveI8 =
-    IntervalRefined<std::int8_t, std::numeric_limits<std::int8_t>::min(), std::int8_t{0}>;
+    IntervalRefined<std::int8_t, std::numeric_limits<std::int8_t>::min(),
+                    std::int8_t{0}>;
 using NonPositiveI16 =
-    IntervalRefined<std::int16_t, std::numeric_limits<std::int16_t>::min(), std::int16_t{0}>;
+    IntervalRefined<std::int16_t, std::numeric_limits<std::int16_t>::min(),
+                    std::int16_t{0}>;
 using NonPositiveI32 =
-    IntervalRefined<std::int32_t, std::numeric_limits<std::int32_t>::min(), std::int32_t{0}>;
+    IntervalRefined<std::int32_t, std::numeric_limits<std::int32_t>::min(),
+                    std::int32_t{0}>;
 using NonPositiveI64 =
-    IntervalRefined<std::int64_t, std::numeric_limits<std::int64_t>::min(), std::int64_t{0}>;
+    IntervalRefined<std::int64_t, std::numeric_limits<std::int64_t>::min(),
+                    std::int64_t{0}>;
 
 // Non-zero integers (!= 0) — predicate-based (cannot be a single interval).
 // Arithmetic on NonZero types returns plain T, not interval-refined results.
-using NonZeroI8  = Refined<std::int8_t, NonZero>;
+using NonZeroI8 = Refined<std::int8_t, NonZero>;
 using NonZeroI16 = Refined<std::int16_t, NonZero>;
 using NonZeroI32 = Refined<std::int32_t, NonZero>;
 using NonZeroI64 = Refined<std::int64_t, NonZero>;
 
-// --- Unsigned integers (NonZero only — Positive ≡ NonZero, NonNegative always true) ---
+// --- Unsigned integers (NonZero only — Positive ≡ NonZero, NonNegative always
+// true) ---
 
-using NonZeroU8  = Refined<std::uint8_t, NonZero>;
+using NonZeroU8 = Refined<std::uint8_t, NonZero>;
 using NonZeroU16 = Refined<std::uint16_t, NonZero>;
 using NonZeroU32 = Refined<std::uint32_t, NonZero>;
 using NonZeroU64 = Refined<std::uint64_t, NonZero>;

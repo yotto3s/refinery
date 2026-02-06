@@ -4,8 +4,8 @@
 #include <gtest/gtest.h>
 #include <limits>
 #include <numbers>
-#include <refinery/refinery.hpp>
 #include <refinery/domain.hpp>
+#include <refinery/refinery.hpp>
 
 using namespace refinery;
 
@@ -703,7 +703,8 @@ TEST(Operations, TransformRefined) {
     auto doubled =
         transform_refined<NonNegative>(p, [](std::int32_t v) { return v * 2; });
     EXPECT_EQ(doubled.get(), 10);
-    static_assert(std::same_as<decltype(doubled), Refined<std::int32_t, NonNegative>>);
+    static_assert(
+        std::same_as<decltype(doubled), Refined<std::int32_t, NonNegative>>);
 }
 
 TEST(Operations, IncrementDecrement) {
