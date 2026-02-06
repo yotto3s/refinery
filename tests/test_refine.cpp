@@ -372,3 +372,174 @@ TEST(FloatEdgeCases, SpecialValues) {
     NormalizedFloat nf{-0.5f, runtime_check};
     EXPECT_EQ(nf.get(), -0.5f);
 }
+
+// ---- Interval Arithmetic Tests ----
+
+TEST(Interval, PredicateBasics) {
+    constexpr auto pred = Interval<0, 10>{};
+    static_assert(pred(0));
+    static_assert(pred(5));
+    static_assert(pred(10));
+    static_assert(!pred(-1));
+    static_assert(!pred(11));
+
+    static_assert(Interval<-3, 5>{}.lo == -3);
+    static_assert(Interval<-3, 5>{}.hi == 5);
+}
+
+TEST(Interval, ConstevalConstruction) {
+    constexpr IntervalRefined<int, 0, 10> x{5};
+    static_assert(x.get() == 5);
+
+    constexpr IntervalRefined<int, -3, 5> y{-2};
+    static_assert(y.get() == -2);
+}
+
+TEST(Interval, RuntimeConstruction) {
+    IntervalRefined<int, 0, 10> x{7, runtime_check};
+    EXPECT_EQ(x.get(), 7);
+
+    EXPECT_THROW((IntervalRefined<int, 0, 10>(11, runtime_check)), refinement_error);
+    EXPECT_THROW((IntervalRefined<int, 0, 10>(-1, runtime_check)), refinement_error);
+}
+
+TEST(Interval, Addition) {
+    constexpr IntervalRefined<int, 0, 10> a{3};
+    constexpr IntervalRefined<int, -3, 5> b{2};
+
+    constexpr auto result = a + b;
+    static_assert(result.get() == 5);
+
+    // Result type should be Interval<-3, 15>
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<int, Interval<-3, 15>{}>>);
+}
+
+TEST(Interval, Subtraction) {
+    constexpr IntervalRefined<int, 0, 10> a{7};
+    constexpr IntervalRefined<int, -3, 5> b{2};
+
+    constexpr auto result = a - b;
+    static_assert(result.get() == 5);
+
+    // [0,10] - [-3,5] = [0-5, 10-(-3)] = [-5, 13]
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<int, Interval<-5, 13>{}>>);
+}
+
+TEST(Interval, Multiplication) {
+    constexpr IntervalRefined<int, 1, 5> a{3};
+    constexpr IntervalRefined<int, 2, 3> b{2};
+
+    constexpr auto result = a * b;
+    static_assert(result.get() == 6);
+
+    // [1,5] * [2,3] = [2, 15]
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<int, Interval<2, 15>{}>>);
+}
+
+TEST(Interval, MultiplicationWithNegatives) {
+    constexpr IntervalRefined<int, -2, 3> a{1};
+    constexpr IntervalRefined<int, -1, 4> b{3};
+
+    constexpr auto result = a * b;
+    static_assert(result.get() == 3);
+
+    // [-2,3] * [-1,4] = [min(2,-8,-3,12), max(2,-8,-3,12)] = [-8, 12]
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<int, Interval<-8, 12>{}>>);
+}
+
+TEST(Interval, Negation) {
+    constexpr IntervalRefined<int, 2, 7> a{5};
+
+    constexpr auto result = -a;
+    static_assert(result.get() == -5);
+
+    // -[2,7] = [-7, -2]
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<int, Interval<-7, -2>{}>>);
+}
+
+TEST(Interval, SameIntervalAddition) {
+    // Two values with the same interval predicate should also work
+    constexpr IntervalRefined<int, 0, 10> a{3};
+    constexpr IntervalRefined<int, 0, 10> b{4};
+
+    constexpr auto result = a + b;
+    static_assert(result.get() == 7);
+
+    // [0,10] + [0,10] = [0, 20]
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<int, Interval<0, 20>{}>>);
+}
+
+TEST(Interval, ChainedOperations) {
+    constexpr IntervalRefined<int, 0, 10> a{3};
+    constexpr IntervalRefined<int, -3, 5> b{2};
+    constexpr IntervalRefined<int, 1, 2> c{2};
+
+    // (a + b) * c
+    constexpr auto sum = a + b;     // Interval<-3, 15>
+    constexpr auto result = sum * c; // [-3,15] * [1,2] = [min(-3,-6,15,30), max(-3,-6,15,30)] = [-6, 30]
+    static_assert(result.get() == 10);
+
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<int, Interval<-6, 30>{}>>);
+}
+
+TEST(Interval, FloatingPoint) {
+    constexpr IntervalRefined<double, 0.0, 1.0> a{0.5};
+    constexpr IntervalRefined<double, -0.5, 0.5> b{0.25};
+
+    constexpr auto result = a + b;
+    static_assert(result.get() == 0.75);
+
+    // [0.0, 1.0] + [-0.5, 0.5] = [-0.5, 1.5]
+    using ResultType = decltype(result);
+    static_assert(std::same_as<ResultType, const Refined<double, Interval<-0.5, 1.5>{}>>);
+}
+
+TEST(Interval, RuntimeArithmetic) {
+    IntervalRefined<int, 0, 10> a{3, runtime_check};
+    IntervalRefined<int, -3, 5> b{2, runtime_check};
+
+    auto sum = a + b;
+    EXPECT_EQ(sum.get(), 5);
+    // Type check still works — the interval computation is compile-time even with runtime values
+    static_assert(std::same_as<decltype(sum), Refined<int, Interval<-3, 15>{}>>);
+
+    auto diff = a - b;
+    EXPECT_EQ(diff.get(), 1);
+    static_assert(std::same_as<decltype(diff), Refined<int, Interval<-5, 13>{}>>);
+
+    IntervalRefined<int, 1, 5> c{3, runtime_check};
+    IntervalRefined<int, 2, 3> d{2, runtime_check};
+    auto prod = c * d;
+    EXPECT_EQ(prod.get(), 6);
+    static_assert(std::same_as<decltype(prod), Refined<int, Interval<2, 15>{}>>);
+
+    IntervalRefined<int, 2, 7> e{5, runtime_check};
+    auto neg = -e;
+    EXPECT_EQ(neg.get(), -5);
+    static_assert(std::same_as<decltype(neg), Refined<int, Interval<-7, -2>{}>>);
+
+    // Same-predicate runtime
+    IntervalRefined<int, 0, 10> f{4, runtime_check};
+    auto same_sum = a + f;
+    EXPECT_EQ(same_sum.get(), 7);
+    static_assert(std::same_as<decltype(same_sum), Refined<int, Interval<0, 20>{}>>);
+
+    // Chained runtime
+    auto chained = (a + b) * IntervalRefined<int, 1, 2>{2, runtime_check};
+    EXPECT_EQ(chained.get(), 10);
+    static_assert(std::same_as<decltype(chained), Refined<int, Interval<-6, 30>{}>>);
+}
+
+TEST(Interval, IntervalTraitsConcept) {
+    static_assert(interval_predicate<Interval<0, 10>{}>);
+    static_assert(interval_predicate<Interval<-5, 5>{}>);
+    static_assert(!interval_predicate<Positive>);
+    static_assert(!interval_predicate<NonZero>);
+}

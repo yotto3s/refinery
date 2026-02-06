@@ -39,6 +39,7 @@
 #include "compose.hpp"
 #include "refined.hpp"
 #include "operations.hpp"
+#include "interval.hpp"
 
 namespace refine {
 
