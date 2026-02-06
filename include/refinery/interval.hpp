@@ -6,6 +6,7 @@
 
 #include <concepts>
 #include <limits>
+#include <type_traits>
 
 #include "refined_type.hpp"
 
@@ -66,8 +67,8 @@ consteval T sat_add(T a, T b) {
             return std::numeric_limits<T>::min();
     } else if constexpr (std::floating_point<T>) {
         constexpr auto mx = std::numeric_limits<T>::max();
-        if ((a > 0 && b > 0) && (a > mx - b)) return mx;
-        if ((a < 0 && b < 0) && (a < -mx - b)) return -mx;
+        if ((a > 0 && b > 0) && (a > mx - b)) return std::numeric_limits<T>::infinity();
+        if ((a < 0 && b < 0) && (a < -mx - b)) return -std::numeric_limits<T>::infinity();
     }
     return a + b;
 }
@@ -81,8 +82,8 @@ consteval T sat_sub(T a, T b) {
             return std::numeric_limits<T>::min();
     } else if constexpr (std::floating_point<T>) {
         constexpr auto mx = std::numeric_limits<T>::max();
-        if ((a > 0 && b < 0) && (a > mx + b)) return mx;
-        if ((a < 0 && b > 0) && (a < -mx + b)) return -mx;
+        if ((a > 0 && b < 0) && (a > mx + b)) return std::numeric_limits<T>::infinity();
+        if ((a < 0 && b > 0) && (a < -mx + b)) return -std::numeric_limits<T>::infinity();
     }
     return a - b;
 }
@@ -114,7 +115,7 @@ consteval T sat_mul(T a, T b) {
         auto abs_b = b < T{0} ? -b : b;
         if (abs_a > mx / abs_b) {
             bool neg = (a < T{0}) != (b < T{0});
-            return neg ? -mx : mx;
+            return neg ? -std::numeric_limits<T>::infinity() : std::numeric_limits<T>::infinity();
         }
     }
     return a * b;

@@ -867,6 +867,10 @@ TEST(Interval, FloatNoThrow) {
     // This produces infinity but shouldn't throw
     auto result = big + big2;
     EXPECT_TRUE(std::isinf(result.get()));
+    // The result interval upper bound is now infinity (not max()),
+    // so the predicate should hold for the infinite value.
+    constexpr auto pred = decltype(result)::predicate;
+    EXPECT_TRUE(pred(result.get()));
 }
 
 // ---- Interval Alias Tests ----
