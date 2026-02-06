@@ -13,8 +13,24 @@ A header-only library providing Liquid Haskell-style refinement types for C++26,
 
 ## Requirements
 
-- GCC 16+ with `-freflection` support (C++26 reflection is required)
+- GCC 16+ built from source with `-freflection` support (C++26 reflection)
 - CMake 3.20+
+
+## Building with a GCC build tree
+
+If you built GCC from source and have an uninstalled build tree, use the provided toolchain file:
+
+```bash
+cmake -B build --toolchain cmake/xg++-toolchain.cmake \
+      -DGCC_BUILD_DIR=/path/to/gcc/build/gcc
+cmake --build build
+ctest --test-dir build
+```
+
+`GCC_BUILD_DIR` should point to the `gcc/` subdirectory of your GCC build tree (the directory containing `xg++` and `cc1plus`). The toolchain file automatically handles:
+- Setting `xg++` as the compiler with the `-B` flag for `cc1plus` lookup
+- Adding `-nostdinc++` and the correct `-isystem` paths for the build-tree libstdc++
+- Linker paths and rpath for the build-tree libstdc++
 
 ## Usage
 
@@ -39,11 +55,21 @@ T safe_divide(T num, Refined<T, NonZero> denom) {
 
 ## Building
 
+With an installed GCC 16+:
+
 ```bash
-mkdir build && cd build
-cmake ..
-cmake --build .
-ctest
+cmake -B build -DCMAKE_CXX_COMPILER=g++-16
+cmake --build build
+ctest --test-dir build
+```
+
+With an uninstalled GCC build tree (see above):
+
+```bash
+cmake -B build --toolchain cmake/xg++-toolchain.cmake \
+      -DGCC_BUILD_DIR=/path/to/gcc/build/gcc
+cmake --build build
+ctest --test-dir build
 ```
 
 ## Installation

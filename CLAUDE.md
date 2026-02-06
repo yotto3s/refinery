@@ -5,20 +5,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Test
 
 ```bash
-# Configure and build
-mkdir build && cd build
-cmake ..
-cmake --build .
+# Configure with GCC build-tree xg++ (uninstalled)
+cmake -B build --toolchain cmake/xg++-toolchain.cmake \
+      -DGCC_BUILD_DIR=/path/to/gcc/build/gcc
 
-# Run tests
-ctest                    # via CTest (60s timeout)
-./tests/test_refine      # direct execution
+# Or with an installed GCC 16+
+cmake -B build -DCMAKE_CXX_COMPILER=g++-16
 
-# Single command from repo root
-cmake --build build && cd build && ctest --output-on-failure; cd ..
+# Build and test
+cmake --build build
+ctest --test-dir build --output-on-failure
+
+# Direct test execution
+./build/tests/test_refine
 ```
 
-Requires GCC 16+ with C++26 reflection support. The `-freflection` flag is added automatically by CMake for GCC.
+Requires GCC 16+ with C++26 reflection support. The `-freflection` flag is added automatically by CMake for GCC. The `xg++-toolchain.cmake` file handles `-B`, `-nostdinc++`, libstdc++ include/link paths for uninstalled GCC build trees.
 
 ## Architecture
 
