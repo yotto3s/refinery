@@ -124,8 +124,14 @@ using NonZeroUsize = Refined<std::size_t, NonZero>;
 using PositiveF32 = Refined<float, Positive>;
 using PositiveF64 = Refined<double, Positive>;
 
+using NegativeF32 = Refined<float, Negative>;
+using NegativeF64 = Refined<double, Negative>;
+
 using NonNegativeF32 = Refined<float, NonNegative>;
 using NonNegativeF64 = Refined<double, NonNegative>;
+
+using NonPositiveF32 = Refined<float, NonPositive>;
+using NonPositiveF64 = Refined<double, NonPositive>;
 
 using NonZeroF32 = Refined<float, NonZero>;
 using NonZeroF64 = Refined<double, NonZero>;
