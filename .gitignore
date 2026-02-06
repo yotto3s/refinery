@@ -20,5 +20,8 @@ test_refine
 *.swp
 *.swo
 
+# Worktrees
+.worktrees/
+
 # OS files
 .DS_Store
