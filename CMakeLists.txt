@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(rcpp
+project(refinery
     VERSION 0.1.0
     DESCRIPTION "C++26 Refinement Types Library"
     LANGUAGES CXX
@@ -11,26 +11,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Options
-option(RCPP_BUILD_TESTS "Build test suite" ON)
-option(RCPP_BUILD_EXAMPLES "Build assembly comparison examples" OFF)
-option(RCPP_INSTALL "Generate install target" ON)
+option(REFINERY_BUILD_TESTS "Build test suite" ON)
+option(REFINERY_BUILD_EXAMPLES "Build assembly comparison examples" OFF)
+option(REFINERY_INSTALL "Generate install target" ON)
 
 # Create header-only library
-add_library(rcpp INTERFACE)
-add_library(rcpp::rcpp ALIAS rcpp)
+add_library(refinery INTERFACE)
+add_library(refinery::refinery ALIAS refinery)
 
-target_include_directories(rcpp INTERFACE
+target_include_directories(refinery INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
 # Add reflection flag (required, GCC only)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(rcpp INTERFACE -freflection)
+    target_compile_options(refinery INTERFACE -freflection)
 endif()
 
 # Tests
-if(RCPP_BUILD_TESTS)
+if(REFINERY_BUILD_TESTS)
     enable_testing()
 
     include(FetchContent)
@@ -45,12 +45,12 @@ if(RCPP_BUILD_TESTS)
 endif()
 
 # Examples
-if(RCPP_BUILD_EXAMPLES)
+if(REFINERY_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
 # Installation
-if(RCPP_INSTALL)
+if(REFINERY_INSTALL)
     include(GNUInstallDirs)
     include(CMakePackageConfigHelpers)
 
@@ -60,32 +60,32 @@ if(RCPP_INSTALL)
     )
 
     # Install targets
-    install(TARGETS rcpp
-        EXPORT rcppTargets
+    install(TARGETS refinery
+        EXPORT refineryTargets
     )
 
     # Generate and install config files
-    install(EXPORT rcppTargets
-        FILE rcppTargets.cmake
-        NAMESPACE rcpp::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rcpp
+    install(EXPORT refineryTargets
+        FILE refineryTargets.cmake
+        NAMESPACE refinery::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/refinery
     )
 
     configure_package_config_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/rcppConfig.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/rcppConfig.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rcpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/refineryConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/refineryConfig.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/refinery
     )
 
     write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/rcppConfigVersion.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/refineryConfigVersion.cmake
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion
     )
 
     install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/rcppConfig.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/rcppConfigVersion.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rcpp
+        ${CMAKE_CURRENT_BINARY_DIR}/refineryConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/refineryConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/refinery
     )
 endif()

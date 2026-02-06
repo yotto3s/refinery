@@ -4,9 +4,9 @@
 // using assume_valid internally. Should compile to a single sqrtsd.
 
 #include <cmath>
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 __attribute__((noinline)) double refined_sqrt(Refined<double, NonNegative> x) {
     return safe_sqrt(x).get();

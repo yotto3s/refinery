@@ -8,9 +8,9 @@
 // Expected: refined_sub_positive and plain_sub_positive produce identical
 // assembly.
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 using PosInt = Refined<int, Positive>;
 

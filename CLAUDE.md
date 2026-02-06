@@ -20,7 +20,7 @@ ctest --test-dir build --output-on-failure
 ./build/tests/test_refine
 
 # Build and run assembly comparison examples
-cmake -B build ... -DRCPP_BUILD_EXAMPLES=ON
+cmake -B build ... -DREFINERY_BUILD_EXAMPLES=ON
 cmake --build build --target asm-compare           # zero-overhead (compile-time paths)
 cmake --build build --target asm-compare-runtime   # runtime-overhead (runtime_check + optional paths)
 ```
@@ -29,14 +29,14 @@ Requires GCC 16+ with C++26 reflection support. The `-freflection` flag is added
 
 ## Architecture
 
-Header-only C++26 library providing Liquid Haskell-style refinement types. Everything lives in the `refined::` namespace.
+Header-only C++26 library providing Liquid Haskell-style refinement types. Everything lives in the `refinery::` namespace.
 
-All public headers live in `include/rcpp/`.
+All public headers live in `include/refinery/`.
 
 ### Header Dependency Graph
 
 ```
-refined.hpp  (main entry point, type aliases, convenience macros)
+refinery.hpp  (main entry point, type aliases, convenience macros)
   ├── diagnostics.hpp   (refinement_error, tag types, reflection-based formatting)
   ├── predicates.hpp    (35+ standard predicates: Positive, NonZero, InRange, Even, Finite, NotNaN, etc.)
   ├── compose.hpp       (All<>, Any<>, Not<>, If<>, runtime composition)
@@ -58,13 +58,13 @@ refined.hpp  (main entry point, type aliases, convenience macros)
 
 **Interval arithmetic** (`interval.hpp`) provides `Interval<Lo, Hi>` structural predicates that carry their bounds as template parameters. Arithmetic on interval-refined values computes result bounds at compile time (e.g., `[0,100] + [0,100]` yields `[0,200]`). The `IntervalRefined<T, Lo, Hi>` alias is a convenience for `Refined<T, Interval<Lo, Hi>{}>`.
 
-### Key Type Aliases (defined in `refined.hpp`)
+### Key Type Aliases (defined in `refinery.hpp`)
 
 `PositiveInt`, `NonZeroInt`, `NonNegativeInt`, `PositiveDouble`, `NonZeroDouble`, `FiniteFloat`, `FiniteDouble`, `NormalizedFloat`, `NormalizedDouble`, `UnitFloat`, `UnitDouble`, `Percentage`, `Probability`, `ByteValue`, `PortNumber`, `Natural`, `Whole`, etc. Created via explicit `using` declarations and the `DEFINE_PREDICATE` macro.
 
 ### Zero-Overhead Examples (`examples/zero_overhead/`)
 
-8 example files with paired `refined_*` / `plain_*` `__attribute__((noinline))` functions that prove zero runtime overhead at `-O2`. Covers: value passthrough, addition, multiplication, safe_sqrt, parameter passing, comparison operators, safe_divide/safe_reciprocal, and multi-op chains. Built with `-DRCPP_BUILD_EXAMPLES=ON`. The `asm-compare` CMake target runs `scripts/compare_asm.sh` which uses `objdump -d` to extract, normalize (strip NOPs, alignment padding, RIP-relative offsets, branch target labels), and diff each pair.
+8 example files with paired `refined_*` / `plain_*` `__attribute__((noinline))` functions that prove zero runtime overhead at `-O2`. Covers: value passthrough, addition, multiplication, safe_sqrt, parameter passing, comparison operators, safe_divide/safe_reciprocal, and multi-op chains. Built with `-DREFINERY_BUILD_EXAMPLES=ON`. The `asm-compare` CMake target runs `scripts/compare_asm.sh` which uses `objdump -d` to extract, normalize (strip NOPs, alignment padding, RIP-relative offsets, branch target labels), and diff each pair.
 
 ### Runtime-Overhead Examples (`examples/runtime_overhead/`)
 

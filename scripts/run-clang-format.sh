@@ -21,7 +21,7 @@ done
 # If no explicit files, find all .hpp/.cpp in project directories
 if [[ ${#FILES[@]} -eq 0 ]]; then
     mapfile -t FILES < <(
-        find "$REPO_ROOT/include/rcpp" \
+        find "$REPO_ROOT/include/refinery" \
              "$REPO_ROOT/tests" \
              "$REPO_ROOT/examples/zero_overhead" \
             -type f \( -name '*.hpp' -o -name '*.cpp' \) \

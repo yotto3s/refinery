@@ -1,8 +1,8 @@
 // refined_type.hpp - Core Refined<T, Predicate> wrapper type
 // Part of the C++26 Refinement Types Library
 
-#ifndef RCPP_REFINED_TYPE_HPP
-#define RCPP_REFINED_TYPE_HPP
+#ifndef REFINERY_REFINED_TYPE_HPP
+#define REFINERY_REFINED_TYPE_HPP
 
 #include <concepts>
 #include <format>
@@ -14,7 +14,7 @@
 
 #include "diagnostics.hpp"
 
-namespace refined {
+namespace refinery {
 
 // Concept to check if a predicate is valid for a type
 template <typename Pred, typename T>
@@ -228,16 +228,16 @@ consteval std::meta::info type_info(const Refined<T, Predicate>&) {
     return ^^Refined<T, Predicate>;
 }
 
-} // namespace refined
+} // namespace refinery
 
 // Formatter specialization for Refined types
 template <typename T, auto Pred>
-struct std::formatter<refined::Refined<T, Pred>> : std::formatter<T> {
+struct std::formatter<refinery::Refined<T, Pred>> : std::formatter<T> {
     template <typename FormatContext>
-    auto format(const refined::Refined<T, Pred>& val,
+    auto format(const refinery::Refined<T, Pred>& val,
                 FormatContext& ctx) const {
         return std::formatter<T>::format(val.get(), ctx);
     }
 };
 
-#endif // RCPP_REFINED_TYPE_HPP
+#endif // REFINERY_REFINED_TYPE_HPP

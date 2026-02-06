@@ -3,9 +3,9 @@
 //
 // Expected: refined and plain pairs produce identical assembly.
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 __attribute__((noinline)) int refined_check_nonzero(int value) {
     return Refined<int, NonZero>(value, runtime_check).get();

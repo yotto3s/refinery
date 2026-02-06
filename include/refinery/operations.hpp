@@ -1,8 +1,8 @@
 // operations.hpp - Arithmetic operations with refinement preservation
 // Part of the C++26 Refinement Types Library
 
-#ifndef RCPP_OPERATIONS_HPP
-#define RCPP_OPERATIONS_HPP
+#ifndef REFINERY_OPERATIONS_HPP
+#define REFINERY_OPERATIONS_HPP
 
 #include <cmath>
 #include <concepts>
@@ -13,7 +13,7 @@
 #include "predicates.hpp"
 #include "refined_type.hpp"
 
-namespace refined {
+namespace refinery {
 
 // Traits for determining output refinement of operations
 namespace traits {
@@ -303,6 +303,6 @@ template <typename T>
     return T{1} / value.get();
 }
 
-} // namespace refined
+} // namespace refinery
 
-#endif // RCPP_OPERATIONS_HPP
+#endif // REFINERY_OPERATIONS_HPP

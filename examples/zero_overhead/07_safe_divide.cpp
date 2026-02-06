@@ -3,9 +3,9 @@
 // safe_divide takes a NonZero denominator and performs plain division.
 // safe_reciprocal computes 1.0 / x for NonZero x.
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 __attribute__((noinline)) double refined_divide(double num,
                                                 Refined<double, NonZero> den) {

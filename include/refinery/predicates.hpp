@@ -1,8 +1,8 @@
 // predicates.hpp - Standard predicates for refinement types
 // Part of the C++26 Refinement Types Library
 
-#ifndef RCPP_PREDICATES_HPP
-#define RCPP_PREDICATES_HPP
+#ifndef REFINERY_PREDICATES_HPP
+#define REFINERY_PREDICATES_HPP
 
 #include <cmath>
 #include <concepts>
@@ -12,7 +12,7 @@
 #include <string_view>
 #include <type_traits>
 
-namespace refined {
+namespace refinery {
 
 // --- Basic numeric predicates ---
 
@@ -217,6 +217,6 @@ inline constexpr auto Always = [](auto) constexpr { return true; };
 // Always false (useful for testing)
 inline constexpr auto Never = [](auto) constexpr { return false; };
 
-} // namespace refined
+} // namespace refinery
 
-#endif // RCPP_PREDICATES_HPP
+#endif // REFINERY_PREDICATES_HPP

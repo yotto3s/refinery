@@ -1,11 +1,11 @@
-# Multi-stage build for rcpp — C++26 refinement types library
+# Multi-stage build for refinery — C++26 refinement types library
 #
 # Usage:
-#   docker build -t rcpp .
-#   docker build -t rcpp --build-arg GCC_COMMIT=abc123 .
-#   docker build -t rcpp --build-arg GCC_JOBS=4 .
-#   docker build -t rcpp --build-arg RCPP_BUILD_EXAMPLES=ON .
-#   docker run rcpp
+#   docker build -t refinery .
+#   docker build -t refinery --build-arg GCC_COMMIT=abc123 .
+#   docker build -t refinery --build-arg GCC_JOBS=4 .
+#   docker build -t refinery --build-arg REFINERY_BUILD_EXAMPLES=ON .
+#   docker run refinery
 
 # ---------- Stage 1: Build GCC with reflection support ----------
 FROM ubuntu:24.04 AS gcc-builder
@@ -31,8 +31,8 @@ RUN bash /tmp/build_gcc.sh \
         --install-prefix /opt/gcc \
     && rm -rf /opt/gcc-build /opt/gcc-src
 
-# ---------- Stage 2: Build and test rcpp ----------
-FROM ubuntu:24.04 AS rcpp
+# ---------- Stage 2: Build and test refinery ----------
+FROM ubuntu:24.04 AS refinery
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         make git ca-certificates gpg wget \
@@ -49,19 +49,19 @@ COPY --from=gcc-builder /opt/gcc /opt/gcc
 ENV PATH="/opt/gcc/bin:$PATH"
 ENV LD_LIBRARY_PATH="/opt/gcc/lib64"
 
-ARG RCPP_BUILD_EXAMPLES=OFF
+ARG REFINERY_BUILD_EXAMPLES=OFF
 
-WORKDIR /rcpp
+WORKDIR /refinery
 COPY . .
 
 RUN cmake -B build \
         -DCMAKE_CXX_COMPILER=/opt/gcc/bin/g++ \
-        -DRCPP_BUILD_EXAMPLES=${RCPP_BUILD_EXAMPLES} \
+        -DREFINERY_BUILD_EXAMPLES=${REFINERY_BUILD_EXAMPLES} \
     && cmake --build build \
     && ctest --test-dir build --output-on-failure
 
 # If examples are enabled, run asm-compare
-RUN if [ "${RCPP_BUILD_EXAMPLES}" = "ON" ]; then \
+RUN if [ "${REFINERY_BUILD_EXAMPLES}" = "ON" ]; then \
         cmake --build build --target asm-compare; \
     fi
 

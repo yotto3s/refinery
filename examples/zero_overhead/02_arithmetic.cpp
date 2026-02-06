@@ -8,9 +8,9 @@
 // For integers, overflow can violate Positive, so operator+ returns
 // std::optional and includes a runtime check (branch).
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 // --- Floating-point: zero overhead ---
 

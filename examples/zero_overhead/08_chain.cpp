@@ -5,9 +5,9 @@
 // NonNegative), and safe_sqrt (preserves NonNegative).
 
 #include <cmath>
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 __attribute__((noinline)) double refined_hypot(Refined<double, NonNegative> x,
                                                Refined<double, NonNegative> y) {

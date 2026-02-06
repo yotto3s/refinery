@@ -6,8 +6,8 @@
 //
 // Example usage:
 //
-//   #include <rcpp/refined.hpp>
-//   using namespace refined;
+//   #include <refinery/refinery.hpp>
+//   using namespace refinery;
 //
 //   // Type-safe division - denominator is guaranteed non-zero
 //   template<typename T>
@@ -31,8 +31,8 @@
 //       }
 //   }
 
-#ifndef RCPP_REFINED_HPP
-#define RCPP_REFINED_HPP
+#ifndef REFINERY_REFINERY_HPP
+#define REFINERY_REFINERY_HPP
 
 #include "compose.hpp"
 #include "diagnostics.hpp"
@@ -41,7 +41,7 @@
 #include "predicates.hpp"
 #include "refined_type.hpp"
 
-namespace refined {
+namespace refinery {
 
 // Common refined type aliases
 
@@ -114,6 +114,6 @@ using Whole = NonNegativeInt;
 // Helper to create a named predicate with documentation
 #define DEFINE_PREDICATE(Name, ...) inline constexpr auto Name = __VA_ARGS__
 
-} // namespace refined
+} // namespace refinery
 
-#endif // RCPP_REFINED_HPP
+#endif // REFINERY_REFINERY_HPP

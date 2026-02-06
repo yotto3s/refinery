@@ -1,4 +1,4 @@
-# rcpp - C++26 Refinement Types Library
+# refinery - C++26 Refinement Types Library
 
 A header-only library providing Liquid Haskell-style refinement types for C++26, using GCC reflection for rich compile-time error messages.
 
@@ -39,8 +39,8 @@ ctest --test-dir build
 ## Usage
 
 ```cpp
-#include <rcpp/refined.hpp>
-using namespace refined;
+#include <refinery/refinery.hpp>
+using namespace refinery;
 
 // Compile-time verified
 constexpr PositiveInt x{42};      // OK
@@ -109,7 +109,7 @@ The `examples/zero_overhead/` directory contains 8 paired benchmarks proving `Re
 ```bash
 cmake -B build --toolchain cmake/xg++-toolchain.cmake \
       -DGCC_BUILD_DIR=/path/to/gcc/build/gcc \
-      -DRCPP_BUILD_EXAMPLES=ON
+      -DREFINERY_BUILD_EXAMPLES=ON
 cmake --build build --target asm-compare
 ```
 
@@ -154,8 +154,8 @@ cmake --install . --prefix /usr/local
 Then in your project:
 
 ```cmake
-find_package(rcpp REQUIRED)
-target_link_libraries(your_target PRIVATE rcpp::rcpp)
+find_package(refinery REQUIRED)
+target_link_libraries(your_target PRIVATE refinery::refinery)
 ```
 
 ## License

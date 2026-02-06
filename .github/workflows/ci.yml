@@ -30,7 +30,7 @@ jobs:
           context: .
           push: false
           load: true
-          tags: rcpp:ci
-          build-args: RCPP_BUILD_EXAMPLES=ON
+          tags: refinery:ci
+          build-args: REFINERY_BUILD_EXAMPLES=ON
           cache-from: type=gha
           cache-to: type=gha,mode=max

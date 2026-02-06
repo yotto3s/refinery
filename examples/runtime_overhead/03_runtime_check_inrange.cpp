@@ -4,9 +4,9 @@
 // Expected: refined_check_inrange and plain_check_inrange produce identical
 // assembly.
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 static constexpr auto InRange1_100 = InRange(1, 100);
 

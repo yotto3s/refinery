@@ -3,9 +3,9 @@
 // Single-param and multi-param variants. Refined<int, Pred> has the same
 // layout as int, so it should use the same calling convention.
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 __attribute__((noinline)) int refined_sum3(Refined<int, Positive> a,
                                            Refined<int, Positive> b,

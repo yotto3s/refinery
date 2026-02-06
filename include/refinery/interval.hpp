@@ -1,12 +1,12 @@
 // interval.hpp - Interval arithmetic for range predicates
 // Part of the C++26 Refinement Types Library
 
-#ifndef RCPP_INTERVAL_HPP
-#define RCPP_INTERVAL_HPP
+#ifndef REFINERY_INTERVAL_HPP
+#define REFINERY_INTERVAL_HPP
 
 #include "refined_type.hpp"
 
-namespace refined {
+namespace refinery {
 
 // Structural interval predicate: closed [Lo, Hi]
 // Valid as NTTP because it has no data members (bounds are template
@@ -161,6 +161,6 @@ template <typename T, auto P>
 template <typename T, auto Lo, auto Hi>
 using IntervalRefined = Refined<T, Interval<Lo, Hi>{}>;
 
-} // namespace refined
+} // namespace refinery
 
-#endif // RCPP_INTERVAL_HPP
+#endif // REFINERY_INTERVAL_HPP

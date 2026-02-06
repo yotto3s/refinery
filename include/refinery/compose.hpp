@@ -1,8 +1,8 @@
 // compose.hpp - Predicate composition utilities
 // Part of the C++26 Refinement Types Library
 
-#ifndef RCPP_COMPOSE_HPP
-#define RCPP_COMPOSE_HPP
+#ifndef REFINERY_COMPOSE_HPP
+#define REFINERY_COMPOSE_HPP
 
 #include <concepts>
 #include <cstddef>
@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace refined {
+namespace refinery {
 
 // Conjunction of predicates: All<P1, P2, ...>
 // Value must satisfy ALL predicates
@@ -132,6 +132,6 @@ template <auto MemPtr, auto Pred>
 inline constexpr auto OnMember =
     [](const auto& v) constexpr { return Pred(v.*MemPtr); };
 
-} // namespace refined
+} // namespace refinery
 
-#endif // RCPP_COMPOSE_HPP
+#endif // REFINERY_COMPOSE_HPP

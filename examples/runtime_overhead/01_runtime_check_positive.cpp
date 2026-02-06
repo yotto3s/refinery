@@ -4,9 +4,9 @@
 // Expected: refined_check_positive and plain_check_positive produce identical
 // assembly (check value > 0, throw refinement_error if not, return value).
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 __attribute__((noinline)) int refined_check_positive(int value) {
     return Refined<int, Positive>(value, runtime_check).get();

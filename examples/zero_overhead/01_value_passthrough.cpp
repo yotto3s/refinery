@@ -3,9 +3,9 @@
 // Expected: refined_passthrough and plain_passthrough produce identical
 // assembly.
 
-#include <rcpp/refined.hpp>
+#include <refinery/refinery.hpp>
 
-using namespace refined;
+using namespace refinery;
 
 __attribute__((noinline)) int refined_passthrough(Refined<int, Positive> x) {
     return x.get();

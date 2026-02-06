@@ -1,8 +1,8 @@
 // diagnostics.hpp - Error formatting via reflection
 // Part of the C++26 Refinement Types Library
 
-#ifndef RCPP_DIAGNOSTICS_HPP
-#define RCPP_DIAGNOSTICS_HPP
+#ifndef REFINERY_DIAGNOSTICS_HPP
+#define REFINERY_DIAGNOSTICS_HPP
 
 #include <exception>
 #include <format>
@@ -12,7 +12,7 @@
 
 #include <meta>
 
-namespace refined {
+namespace refinery {
 
 namespace detail {
 
@@ -69,6 +69,6 @@ struct assume_valid_t {
 };
 inline constexpr assume_valid_t assume_valid{};
 
-} // namespace refined
+} // namespace refinery
 
-#endif // RCPP_DIAGNOSTICS_HPP
+#endif // REFINERY_DIAGNOSTICS_HPP
