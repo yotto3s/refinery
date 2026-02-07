@@ -12,6 +12,8 @@
 #include <string_view>
 #include <type_traits>
 
+#include "compose.hpp"
+
 namespace refinery {
 
 // --- Basic numeric predicates ---
@@ -26,25 +28,19 @@ inline constexpr auto Negative = [](auto v) constexpr {
     return v < decltype(v){0};
 };
 
-// True if value >= 0
-inline constexpr auto NonNegative = [](auto v) constexpr {
-    return v >= decltype(v){0};
-};
-
-// True if value <= 0
-inline constexpr auto NonPositive = [](auto v) constexpr {
-    return v <= decltype(v){0};
-};
-
-// True if value != 0
-inline constexpr auto NonZero = [](auto v) constexpr {
-    return v != decltype(v){0};
-};
-
 // True if value == 0
 inline constexpr auto Zero = [](auto v) constexpr {
     return v == decltype(v){0};
 };
+
+// True if value >= 0 (Not<Negative>)
+inline constexpr auto NonNegative = Not<Negative>;
+
+// True if value <= 0 (Not<Positive>)
+inline constexpr auto NonPositive = Not<Positive>;
+
+// True if value != 0 (Not<Zero>)
+inline constexpr auto NonZero = Not<Zero>;
 
 // --- Range predicates (curried) ---
 
@@ -95,17 +91,6 @@ inline constexpr auto InHalfOpenRange = [](auto lo, auto hi) constexpr {
 
 // --- Container/string predicates ---
 
-// True if container is not empty (requires .empty() or .size())
-inline constexpr auto NonEmpty = [](const auto& v) constexpr {
-    if constexpr (requires { v.empty(); }) {
-        return !v.empty();
-    } else if constexpr (requires { v.size(); }) {
-        return v.size() > 0;
-    } else {
-        static_assert(false, "Type does not support empty() or size()");
-    }
-};
-
 // True if container is empty (requires .empty() or .size())
 inline constexpr auto Empty = [](const auto& v) constexpr {
     if constexpr (requires { v.empty(); }) {
@@ -116,6 +101,9 @@ inline constexpr auto Empty = [](const auto& v) constexpr {
         static_assert(false, "Type does not support empty() or size()");
     }
 };
+
+// True if container is not empty (Not<Empty>)
+inline constexpr auto NonEmpty = Not<Empty>;
 
 // True if container size >= min_size
 inline constexpr auto SizeAtLeast = [](std::size_t min_size) constexpr {
@@ -142,11 +130,11 @@ inline constexpr auto SizeInRange = [](std::size_t min_size,
 
 // --- Pointer predicates ---
 
-// True if pointer is not null
-inline constexpr auto NotNull = [](auto* p) constexpr { return p != nullptr; };
-
 // True if pointer is null
 inline constexpr auto IsNull = [](auto* p) constexpr { return p == nullptr; };
+
+// True if pointer is not null (Not<IsNull>)
+inline constexpr auto NotNull = Not<IsNull>;
 
 // --- Divisibility predicates ---
 
@@ -158,8 +146,8 @@ inline constexpr auto DivisibleBy = [](auto divisor) constexpr {
 // True if value is even
 inline constexpr auto Even = [](auto v) constexpr { return v % 2 == 0; };
 
-// True if value is odd
-inline constexpr auto Odd = [](auto v) constexpr { return v % 2 != 0; };
+// True if value is odd (Not<Even>)
+inline constexpr auto Odd = Not<Even>;
 
 // --- Bitwise predicates ---
 
@@ -183,11 +171,11 @@ inline constexpr auto Normalized = [](auto v) constexpr {
     return v >= decltype(v){-1} && v <= decltype(v){1};
 };
 
-// True if value is not NaN (uses IEEE 754: NaN != NaN)
-inline constexpr auto NotNaN = [](auto v) constexpr { return v == v; };
-
 // True if value is NaN (uses IEEE 754: NaN != NaN)
 inline constexpr auto IsNaN = [](auto v) constexpr { return v != v; };
+
+// True if value is not NaN (Not<IsNaN>)
+inline constexpr auto NotNaN = Not<IsNaN>;
 
 // True if value is +infinity or -infinity
 inline constexpr auto IsInf = [](auto v) constexpr {
