@@ -4,6 +4,7 @@
 #ifndef REFINERY_REFINED_CONTAINER_HPP
 #define REFINERY_REFINED_CONTAINER_HPP
 
+#include <array>
 #include <cstddef>
 #include <concepts>
 #include <format>
@@ -220,6 +221,44 @@ class RefinedContainer {
     {
         container_.emplace_back(std::forward<Args>(args)...);
         constexpr auto new_pred = size_interval_shift<SizePredicate, 1>();
+        return RefinedContainer<Container, new_pred>(std::move(container_),
+                                                     assume_valid);
+    }
+
+    // Append from std::array (compile-time-known size N)
+    template <typename V, std::size_t N>
+    [[nodiscard]] constexpr auto append(const std::array<V, N>& source) &&
+        requires requires(Container& c, const V& v) {
+            c.push_back(v);
+        }
+    {
+        for (const auto& elem : source) {
+            container_.push_back(elem);
+        }
+        constexpr auto new_pred =
+            size_interval_shift<SizePredicate,
+                                static_cast<std::ptrdiff_t>(N)>();
+        return RefinedContainer<Container, new_pred>(std::move(container_),
+                                                     assume_valid);
+    }
+
+    // Append from another RefinedContainer (uses source's lower bound)
+    template <SizedContainer C2, auto SizePred2>
+    [[nodiscard]] constexpr auto
+    append(RefinedContainer<C2, SizePred2>&& source) &&
+        requires requires(Container& c,
+                          const typename C2::value_type& v) {
+            c.push_back(v);
+        } && size_interval_predicate<SizePred2>
+    {
+        auto released = std::move(source).release();
+        for (auto& elem : released) {
+            container_.push_back(std::move(elem));
+        }
+        constexpr std::ptrdiff_t delta = static_cast<std::ptrdiff_t>(
+            traits::size_interval_traits<decltype(SizePred2)>::lo);
+        constexpr auto new_pred =
+            size_interval_shift<SizePredicate, delta>();
         return RefinedContainer<Container, new_pred>(std::move(container_),
                                                      assume_valid);
     }

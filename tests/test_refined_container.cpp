@@ -287,3 +287,54 @@ static_assert(
                      Interval<std::size_t{0}, std::size_t{4}>{}> idx) {
         rc[idx]; // upper bound 4 < lower bound 5 -> should compile
     });
+
+// --- Range insertion tests ---
+
+TEST(RefinedContainerAppend, FromArray) {
+    std::vector<int> v{1, 2, 3};
+    RefinedContainer<std::vector<int>, SizeInterval<3>{}> rc(std::move(v),
+                                                             runtime_check);
+
+    std::array<int, 2> arr{4, 5};
+    auto rc2 = std::move(rc).append(arr);
+    EXPECT_EQ(rc2.size(), 5);
+    EXPECT_EQ(rc2.back(), 5);
+
+    // SizeInterval<3> + 2 -> SizeInterval<5>
+    static_assert(std::same_as<
+                  decltype(rc2),
+                  RefinedContainer<std::vector<int>, SizeInterval<5>{}>>);
+}
+
+TEST(RefinedContainerAppend, FromRefinedContainer) {
+    std::vector<int> target_v{1, 2, 3};
+    RefinedContainer<std::vector<int>, SizeInterval<3>{}> target(
+        std::move(target_v), runtime_check);
+
+    std::vector<int> source_v{4, 5};
+    RefinedContainer<std::vector<int>, SizeInterval<2>{}> source(
+        std::move(source_v), runtime_check);
+
+    // SizeInterval<3> + lower_bound(SizeInterval<2>) -> SizeInterval<5>
+    auto result = std::move(target).append(std::move(source));
+    EXPECT_EQ(result.size(), 5);
+
+    static_assert(std::same_as<
+                  decltype(result),
+                  RefinedContainer<std::vector<int>, SizeInterval<5>{}>>);
+}
+
+TEST(RefinedContainerAppend, FromEmptyArray) {
+    std::vector<int> v{1};
+    RefinedContainer<std::vector<int>, SizeInterval<1>{}> rc(std::move(v),
+                                                             runtime_check);
+
+    std::array<int, 0> arr{};
+    auto rc2 = std::move(rc).append(arr);
+    EXPECT_EQ(rc2.size(), 1);
+
+    // SizeInterval<1> + 0 -> SizeInterval<1>
+    static_assert(std::same_as<
+                  decltype(rc2),
+                  RefinedContainer<std::vector<int>, SizeInterval<1>{}>>);
+}
