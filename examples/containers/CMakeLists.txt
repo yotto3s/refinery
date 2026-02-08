@@ -15,6 +15,9 @@ foreach(example IN LISTS CONTAINER_EXAMPLES)
     set(target "container_${example}")
     add_executable(${target} "${example}.cpp")
     target_link_libraries(${target} PRIVATE refinery::refinery)
+    # GCC produces false-positive -Warray-bounds warnings in std::vector's
+    # push_back/emplace_back inlining at -O2 (tracks initial allocation size
+    # through reallocation paths)
     target_compile_options(${target} PRIVATE -O2 -Wall -Wextra -Werror -Wno-unused-but-set-variable -Wno-array-bounds)
     list(APPEND CONTAINER_TARGETS ${target})
 endforeach()
