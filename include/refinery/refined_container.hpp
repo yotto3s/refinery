@@ -170,6 +170,19 @@ class RefinedContainer {
         return container_.back();
     }
 
+    // Static indexing: accepts Refined<size_t, IndexPred> where the index
+    // upper bound is provably less than the container's size lower bound.
+    template <auto IndexPred>
+        requires(size_interval_predicate<SizePredicate> &&
+                 detail::has_interval_bounds<IndexPred> &&
+                 decltype(IndexPred)::hi <
+                     traits::size_interval_traits<
+                         decltype(SizePredicate)>::lo)
+    [[nodiscard]] constexpr const auto&
+    operator[](Refined<std::size_t, IndexPred> idx) const {
+        return container_[idx.get()];
+    }
+
     // --- Mutations (consume *this, return new RefinedContainer) ---
 
     // push_back: delta +1

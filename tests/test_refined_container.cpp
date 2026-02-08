@@ -252,3 +252,38 @@ TEST(RefinedContainerMutation, ChainedPushBack) {
                   decltype(rc2),
                   RefinedContainer<std::vector<int>, SizeInterval<3>{}>>);
 }
+
+// --- Static indexing tests ---
+
+#include <refinery/refinery.hpp>
+
+TEST(RefinedContainerIndex, StaticBoundsAccess) {
+    std::vector<int> v{10, 20, 30, 40, 50};
+    RefinedContainer<std::vector<int>, SizeInterval<5>{}> rc(std::move(v),
+                                                             runtime_check);
+
+    // Interval<0, 4> has upper bound 4 < lower bound 5 -> compiles
+    using Idx = Refined<std::size_t,
+                        Interval<std::size_t{0}, std::size_t{4}>{}>;
+    Idx idx{3};
+    EXPECT_EQ(rc[idx], 40);
+}
+
+TEST(RefinedContainerIndex, ZeroIndex) {
+    std::vector<int> v{42, 99};
+    RefinedContainer<std::vector<int>, SizeInterval<2>{}> rc(std::move(v),
+                                                             runtime_check);
+
+    using Idx = Refined<std::size_t,
+                        Interval<std::size_t{0}, std::size_t{1}>{}>;
+    Idx idx{0};
+    EXPECT_EQ(rc[idx], 42);
+}
+
+// Compile-time: index with upper bound < container lower bound should work
+static_assert(
+    requires(RefinedContainer<std::vector<int>, SizeInterval<5>{}> rc,
+             Refined<std::size_t,
+                     Interval<std::size_t{0}, std::size_t{4}>{}> idx) {
+        rc[idx]; // upper bound 4 < lower bound 5 -> should compile
+    });
