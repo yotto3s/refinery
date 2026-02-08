@@ -336,13 +336,31 @@ TEST(RefinedContainerAppend, FromRefinedContainer) {
     RefinedContainer<std::vector<int>, SizeInterval<2>{}> source(
         std::move(source_v), runtime_check);
 
-    // SizeInterval<3> + lower_bound(SizeInterval<2>) -> SizeInterval<5>
+    // SizeInterval<3> + SizeInterval<2> -> SizeInterval<5>
     auto result = std::move(target).append(std::move(source));
     EXPECT_EQ(result.size(), 5);
 
     static_assert(
         std::same_as<decltype(result),
                      RefinedContainer<std::vector<int>, SizeInterval<5>{}>>);
+}
+
+TEST(RefinedContainerAppend, FromRefinedContainerFiniteBounds) {
+    std::vector<int> target_v{1, 2, 3};
+    RefinedContainer<std::vector<int>, SizeInterval<3, 5>{}> target(
+        std::move(target_v), runtime_check);
+
+    std::vector<int> source_v{4, 5};
+    RefinedContainer<std::vector<int>, SizeInterval<2, 10>{}> source(
+        std::move(source_v), runtime_check);
+
+    // [3,5] + [2,10] -> [5,15]
+    auto result = std::move(target).append(std::move(source));
+    EXPECT_EQ(result.size(), 5);
+
+    static_assert(
+        std::same_as<decltype(result),
+                     RefinedContainer<std::vector<int>, SizeInterval<5, 15>{}>>);
 }
 
 TEST(RefinedContainerAppend, FromEmptyArray) {

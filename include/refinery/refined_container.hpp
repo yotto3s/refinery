@@ -25,6 +25,7 @@ namespace refinery {
 template <std::size_t Lo,
           std::size_t Hi = std::numeric_limits<std::size_t>::max()>
 struct SizeInterval {
+    static_assert(Lo <= Hi, "SizeInterval requires Lo <= Hi");
     static constexpr std::size_t lo = Lo;
     static constexpr std::size_t hi = Hi;
 
@@ -282,9 +283,10 @@ class RefinedContainer {
     // push_back: delta +1
     template <typename V>
     [[nodiscard]] constexpr auto push_back(V&& value) &&
-        requires requires(Container& c, V&& v) {
-            c.push_back(std::forward<V>(v));
-        }
+        requires size_interval_predicate<SizePredicate> &&
+            requires(Container& c, V&& v) {
+                c.push_back(std::forward<V>(v));
+            }
     {
         container_.push_back(std::forward<V>(value));
         constexpr auto new_pred = size_interval_shift<SizePredicate, 1>();
@@ -308,9 +310,10 @@ class RefinedContainer {
     // emplace_back: delta +1
     template <typename... Args>
     [[nodiscard]] constexpr auto emplace_back(Args&&... args) &&
-        requires requires(Container& c, Args&&... a) {
-            c.emplace_back(std::forward<Args>(a)...);
-        }
+        requires size_interval_predicate<SizePredicate> &&
+            requires(Container& c, Args&&... a) {
+                c.emplace_back(std::forward<Args>(a)...);
+            }
     {
         container_.emplace_back(std::forward<Args>(args)...);
         constexpr auto new_pred = size_interval_shift<SizePredicate, 1>();
@@ -321,7 +324,8 @@ class RefinedContainer {
     // Append from std::array (compile-time-known size N)
     template <typename V, std::size_t N>
     [[nodiscard]] constexpr auto append(const std::array<V, N>& source) &&
-        requires requires(Container& c, const V& v) { c.push_back(v); }
+        requires size_interval_predicate<SizePredicate> &&
+            requires(Container& c, const V& v) { c.push_back(v); }
     {
         for (const auto& elem : source) {
             container_.push_back(elem);
@@ -333,21 +337,27 @@ class RefinedContainer {
                                                      assume_valid);
     }
 
-    // Append from another RefinedContainer (uses source's lower bound)
+    // Append from another RefinedContainer (sound interval addition)
     template <SizedContainer C2, auto SizePred2>
     [[nodiscard]] constexpr auto
     append(RefinedContainer<C2, SizePred2>&& source) &&
-        requires requires(Container& c, const typename C2::value_type& v) {
-            c.push_back(v);
-        } && size_interval_predicate<SizePred2>
+        requires requires(Container& c, typename C2::value_type&& v) {
+            c.push_back(std::move(v));
+        } && size_interval_predicate<SizePredicate> &&
+            size_interval_predicate<SizePred2>
     {
         auto released = std::move(source).release();
         for (auto& elem : released) {
             container_.push_back(std::move(elem));
         }
-        constexpr std::ptrdiff_t delta = static_cast<std::ptrdiff_t>(
-            traits::size_interval_traits<decltype(SizePred2)>::lo);
-        constexpr auto new_pred = size_interval_shift<SizePredicate, delta>();
+        using t = traits::size_interval_traits<decltype(SizePredicate)>;
+        using s = traits::size_interval_traits<decltype(SizePred2)>;
+        constexpr auto max_sz = std::numeric_limits<std::size_t>::max();
+        constexpr auto new_lo =
+            (t::lo > max_sz - s::lo) ? max_sz : t::lo + s::lo;
+        constexpr auto new_hi =
+            (t::hi > max_sz - s::hi) ? max_sz : t::hi + s::hi;
+        constexpr auto new_pred = SizeInterval<new_lo, new_hi>{};
         return RefinedContainer<Container, new_pred>(std::move(container_),
                                                      assume_valid);
     }
