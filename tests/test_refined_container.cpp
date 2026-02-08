@@ -1,5 +1,8 @@
 // test_refined_container.cpp - Tests for refined container wrappers
 
+#include <array>
+#include <vector>
+
 #include <gtest/gtest.h>
 #include <refinery/refined_container.hpp>
 
@@ -57,4 +60,57 @@ TEST(SizeInterval, Traits) {
 TEST(SizeInterval, Concept) {
     static_assert(size_interval_predicate<SizeInterval<3, 10>{}>);
     static_assert(size_interval_predicate<SizeInterval<5>{}>);
+}
+
+// --- SizedContainer concept tests ---
+
+TEST(SizedContainer, VectorSatisfies) {
+    static_assert(SizedContainer<std::vector<int>>);
+}
+
+TEST(SizedContainer, ArraySatisfies) {
+    static_assert(SizedContainer<std::array<int, 5>>);
+}
+
+// --- RefinedContainer construction tests ---
+
+TEST(RefinedContainerConstruction, RuntimeCheckValid) {
+    std::vector<int> v{1, 2, 3, 4, 5};
+    RefinedContainer<std::vector<int>, SizeInterval<3>{}> rc(std::move(v),
+                                                             runtime_check);
+    EXPECT_EQ(rc.size(), 5);
+    EXPECT_FALSE(rc.empty());
+}
+
+TEST(RefinedContainerConstruction, RuntimeCheckInvalid) {
+    std::vector<int> v{1, 2};
+    EXPECT_THROW(
+        (RefinedContainer<std::vector<int>, SizeInterval<3>{}>(std::move(v),
+                                                               runtime_check)),
+        refinement_error);
+}
+
+TEST(RefinedContainerConstruction, AssumeValid) {
+    std::vector<int> v{1, 2, 3};
+    RefinedContainer<std::vector<int>, SizeInterval<3>{}> rc(std::move(v),
+                                                             assume_valid);
+    EXPECT_EQ(rc.size(), 3);
+}
+
+TEST(RefinedContainerConstruction, Get) {
+    std::vector<int> v{10, 20, 30};
+    RefinedContainer<std::vector<int>, SizeInterval<1>{}> rc(std::move(v),
+                                                             runtime_check);
+    const auto& inner = rc.get();
+    EXPECT_EQ(inner.size(), 3);
+    EXPECT_EQ(inner[0], 10);
+}
+
+TEST(RefinedContainerConstruction, Release) {
+    std::vector<int> v{10, 20, 30};
+    RefinedContainer<std::vector<int>, SizeInterval<1>{}> rc(std::move(v),
+                                                             runtime_check);
+    auto released = std::move(rc).release();
+    EXPECT_EQ(released.size(), 3);
+    EXPECT_EQ(released[1], 20);
 }

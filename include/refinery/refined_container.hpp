@@ -5,6 +5,8 @@
 #define REFINERY_REFINED_CONTAINER_HPP
 
 #include <cstddef>
+#include <concepts>
+#include <format>
 #include <limits>
 #include <type_traits>
 
@@ -43,6 +45,67 @@ struct size_interval_traits<SizeInterval<Lo, Hi>> : std::true_type {
 template <auto Pred>
 concept size_interval_predicate =
     traits::size_interval_traits<decltype(Pred)>::value;
+
+// Concept: type has a .size() method returning something convertible to size_t
+template <typename C>
+concept SizedContainer = requires(const C& c) {
+    { c.size() } -> std::convertible_to<std::size_t>;
+};
+
+// Core refined container wrapper
+template <SizedContainer Container, auto SizePredicate>
+    requires predicate_for<decltype(SizePredicate), std::size_t>
+class RefinedContainer {
+  public:
+    using container_type = Container;
+    using value_type = typename Container::value_type;
+    static constexpr auto size_predicate = SizePredicate;
+
+  private:
+    Container container_;
+
+  public:
+    // Runtime checked construction
+    constexpr explicit RefinedContainer(Container container, runtime_check_t)
+        : container_(std::move(container)) {
+        if (!SizePredicate(container_.size())) {
+            throw refinement_error(
+                std::format("Size refinement violation: size {} does not "
+                            "satisfy predicate",
+                            container_.size()));
+        }
+    }
+
+    // Unchecked construction (caller guarantees predicate holds)
+    constexpr explicit RefinedContainer(Container container,
+                                        assume_valid_t) noexcept
+        : container_(std::move(container)) {}
+
+    // Copy and move
+    constexpr RefinedContainer(const RefinedContainer&) = default;
+    constexpr RefinedContainer(RefinedContainer&&) = default;
+    constexpr RefinedContainer& operator=(const RefinedContainer&) = default;
+    constexpr RefinedContainer& operator=(RefinedContainer&&) = default;
+
+    // Access the underlying container
+    [[nodiscard]] constexpr const Container& get() const noexcept {
+        return container_;
+    }
+
+    // Release ownership of the underlying container
+    [[nodiscard]] constexpr Container release() && noexcept {
+        return std::move(container_);
+    }
+
+    // Size and emptiness (always available)
+    [[nodiscard]] constexpr std::size_t size() const noexcept {
+        return container_.size();
+    }
+
+    [[nodiscard]] constexpr bool empty() const noexcept {
+        return container_.empty();
+    }
+};
 
 } // namespace refinery
 
