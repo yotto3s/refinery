@@ -46,6 +46,29 @@ template <auto Pred>
 concept size_interval_predicate =
     traits::size_interval_traits<decltype(Pred)>::value;
 
+// Compute new SizeInterval after shifting bounds by Delta
+template <auto Pred, std::ptrdiff_t Delta>
+    requires size_interval_predicate<Pred>
+consteval auto size_interval_shift() {
+    constexpr auto lo = traits::size_interval_traits<decltype(Pred)>::lo;
+    constexpr auto hi = traits::size_interval_traits<decltype(Pred)>::hi;
+
+    constexpr auto new_lo =
+        (Delta >= 0)
+            ? lo + static_cast<std::size_t>(Delta)
+            : lo - static_cast<std::size_t>(-Delta);
+
+    constexpr auto max_sz = std::numeric_limits<std::size_t>::max();
+    constexpr auto new_hi =
+        (hi == max_sz)
+            ? max_sz
+            : (Delta >= 0)
+                  ? hi + static_cast<std::size_t>(Delta)
+                  : hi - static_cast<std::size_t>(-Delta);
+
+    return SizeInterval<new_lo, new_hi>{};
+}
+
 // Concept: type has a .size() method returning something convertible to size_t
 template <typename C>
 concept SizedContainer = requires(const C& c) {
@@ -145,6 +168,47 @@ class RefinedContainer {
                      decltype(SizePredicate)>::lo >= 1)
     {
         return container_.back();
+    }
+
+    // --- Mutations (consume *this, return new RefinedContainer) ---
+
+    // push_back: delta +1
+    template <typename V>
+    [[nodiscard]] constexpr auto push_back(V&& value) &&
+        requires requires(Container& c, V&& v) {
+            c.push_back(std::forward<V>(v));
+        }
+    {
+        container_.push_back(std::forward<V>(value));
+        constexpr auto new_pred = size_interval_shift<SizePredicate, 1>();
+        return RefinedContainer<Container, new_pred>(std::move(container_),
+                                                     assume_valid);
+    }
+
+    // pop_back: delta -1, requires non-empty
+    [[nodiscard]] constexpr auto pop_back() &&
+        requires requires(Container& c) { c.pop_back(); } &&
+                 (size_interval_predicate<SizePredicate> &&
+                  traits::size_interval_traits<
+                      decltype(SizePredicate)>::lo >= 1)
+    {
+        container_.pop_back();
+        constexpr auto new_pred = size_interval_shift<SizePredicate, -1>();
+        return RefinedContainer<Container, new_pred>(std::move(container_),
+                                                     assume_valid);
+    }
+
+    // emplace_back: delta +1
+    template <typename... Args>
+    [[nodiscard]] constexpr auto emplace_back(Args&&... args) &&
+        requires requires(Container& c, Args&&... a) {
+            c.emplace_back(std::forward<Args>(a)...);
+        }
+    {
+        container_.emplace_back(std::forward<Args>(args)...);
+        constexpr auto new_pred = size_interval_shift<SizePredicate, 1>();
+        return RefinedContainer<Container, new_pred>(std::move(container_),
+                                                     assume_valid);
     }
 };
 

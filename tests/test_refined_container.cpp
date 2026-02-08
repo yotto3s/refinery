@@ -1,6 +1,7 @@
 // test_refined_container.cpp - Tests for refined container wrappers
 
 #include <array>
+#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -163,3 +164,91 @@ static_assert(
         rc.front();
         rc.back();
     });
+
+// --- Predicate propagation trait tests ---
+
+TEST(SizeIntervalShift, PushBack) {
+    // SizeInterval<3, 10> + 1 -> SizeInterval<4, 11>
+    constexpr auto shifted = size_interval_shift<SizeInterval<3, 10>{}, 1>();
+    static_assert(shifted.lo == 4);
+    static_assert(shifted.hi == 11);
+}
+
+TEST(SizeIntervalShift, PopBack) {
+    // SizeInterval<3, 10> - 1 -> SizeInterval<2, 9>
+    constexpr auto shifted = size_interval_shift<SizeInterval<3, 10>{}, -1>();
+    static_assert(shifted.lo == 2);
+    static_assert(shifted.hi == 9);
+}
+
+TEST(SizeIntervalShift, DefaultUpperBound) {
+    // SizeInterval<5> + 1 -> SizeInterval<6> (hi stays at max)
+    constexpr auto shifted = size_interval_shift<SizeInterval<5>{}, 1>();
+    static_assert(shifted.lo == 6);
+    static_assert(shifted.hi == std::numeric_limits<std::size_t>::max());
+}
+
+TEST(SizeIntervalShift, MultipleElements) {
+    // SizeInterval<2> + 3 -> SizeInterval<5>
+    constexpr auto shifted = size_interval_shift<SizeInterval<2>{}, 3>();
+    static_assert(shifted.lo == 5);
+}
+
+// --- Mutation tests ---
+
+TEST(RefinedContainerMutation, PushBack) {
+    std::vector<int> v{1, 2, 3};
+    RefinedContainer<std::vector<int>, SizeInterval<3>{}> rc(std::move(v),
+                                                             runtime_check);
+
+    auto rc2 = std::move(rc).push_back(4);
+    EXPECT_EQ(rc2.size(), 4);
+    EXPECT_EQ(rc2.back(), 4);
+
+    // Verify the predicate was updated: rc2 should have SizeInterval<4>
+    static_assert(std::same_as<
+                  decltype(rc2),
+                  RefinedContainer<std::vector<int>, SizeInterval<4>{}>>);
+}
+
+TEST(RefinedContainerMutation, PopBack) {
+    std::vector<int> v{1, 2, 3};
+    RefinedContainer<std::vector<int>, SizeInterval<3>{}> rc(std::move(v),
+                                                             runtime_check);
+
+    auto rc2 = std::move(rc).pop_back();
+    EXPECT_EQ(rc2.size(), 2);
+
+    // Verify predicate: SizeInterval<3> - 1 -> SizeInterval<2>
+    static_assert(std::same_as<
+                  decltype(rc2),
+                  RefinedContainer<std::vector<int>, SizeInterval<2>{}>>);
+}
+
+TEST(RefinedContainerMutation, EmplaceBack) {
+    std::vector<std::string> v{"hello"};
+    RefinedContainer<std::vector<std::string>, SizeInterval<1>{}> rc(
+        std::move(v), runtime_check);
+
+    auto rc2 = std::move(rc).emplace_back("world");
+    EXPECT_EQ(rc2.size(), 2);
+    EXPECT_EQ(rc2.back(), "world");
+
+    static_assert(std::same_as<
+                  decltype(rc2),
+                  RefinedContainer<std::vector<std::string>, SizeInterval<2>{}>>);
+}
+
+TEST(RefinedContainerMutation, ChainedPushBack) {
+    std::vector<int> v;
+    RefinedContainer<std::vector<int>, SizeInterval<0>{}> rc(std::move(v),
+                                                             runtime_check);
+
+    auto rc2 = std::move(rc).push_back(1).push_back(2).push_back(3);
+    EXPECT_EQ(rc2.size(), 3);
+    EXPECT_EQ(rc2.front(), 1);
+
+    static_assert(std::same_as<
+                  decltype(rc2),
+                  RefinedContainer<std::vector<int>, SizeInterval<3>{}>>);
+}
